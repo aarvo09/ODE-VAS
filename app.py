@@ -7,9 +7,43 @@ app = Flask(__name__)
 
 SUPPORTED_FUNCTIONS = {'sin', 'cos', 'exp', 'tan', 'log', 'sqrt'}
 SUPPORTED_SYMBOLS = {'x', 'y'}
-ALLOWED_CHARS = set('xy0123456789+-*/^(). ')
+ALLOWED_CHARS = set('xy0123456789+-*/^(). abcdefghijklmnopqrstuvwz')
 
-def validate_equation_input(equation_str):
+def parse_parameters(param_str):
+    if not param_str or param_str.strip() == '':
+        return {}, None
+    
+    params = {}
+    try:
+        param_pairs = param_str.split(',')
+        for pair in param_pairs:
+            pair = pair.strip()
+            if '=' not in pair:
+                return None, f"Invalid parameter format: '{pair}'. Use format: name=value"
+            
+            name, value = pair.split('=', 1)
+            name = name.strip()
+            value = value.strip()
+            
+            if not re.match(r'^[a-z]$', name):
+                return None, f"Parameter name must be a single lowercase letter (a-z, excluding x,y): '{name}'"
+            
+            if name in ['x', 'y']:
+                return None, f"Cannot use '{name}' as parameter name (reserved for variables)"
+            
+            try:
+                params[name] = float(value)
+            except ValueError:
+                return None, f"Parameter value must be a number: '{value}'"
+        
+        return params, None
+    except Exception as e:
+        return None, f"Error parsing parameters: {str(e)}"
+
+def validate_equation_input(equation_str, param_names=None):
+    if param_names is None:
+        param_names = set()
+    
     if not equation_str or equation_str.strip() == '':
         return False, "Equation cannot be empty"
     
@@ -17,6 +51,9 @@ def validate_equation_input(equation_str):
     
     for func in SUPPORTED_FUNCTIONS:
         equation_clean = equation_clean.replace(func, '')
+    
+    for param in param_names:
+        equation_clean = equation_clean.replace(param.lower(), '')
     
     for char in equation_clean:
         if char not in ALLOWED_CHARS:
@@ -27,29 +64,35 @@ def validate_equation_input(equation_str):
         if func.lower() not in SUPPORTED_FUNCTIONS:
             return False, f"Unsupported function: '{func}'. Supported functions are: {', '.join(sorted(SUPPORTED_FUNCTIONS))}"
     
-    temp = equation_str.lower()
-    for func in SUPPORTED_FUNCTIONS:
-        temp = temp.replace(func, '')
-    temp = temp.replace('x', '').replace('y', '')
-    
-    remaining_letters = re.findall(r'[a-zA-Z]+', temp)
-    if remaining_letters:
-        return False, f"Invalid variable: '{remaining_letters[0]}'. Only 'x' and 'y' are allowed"
-    
     return True, ""
 
-def parse_equation(equation_str):
+def parse_equation(equation_str, parameters=None):
+    if parameters is None:
+        parameters = {}
+    
     try:
         x, y = symbols('x y')
         
+        param_symbols = {name: symbols(name) for name in parameters.keys()}
+        
         transformations = standard_transformations + (implicit_multiplication_application,)
         
+        local_dict = {
+            'x': x, 'y': y, 
+            'sin': sin, 'cos': cos, 'exp': exp, 
+            'tan': tan, 'log': log, 'sqrt': sqrt
+        }
+        local_dict.update(param_symbols)
+        
         expr = parse_expr(equation_str, 
-                         local_dict={'x': x, 'y': y, 'sin': sin, 'cos': cos, 
-                                   'exp': exp, 'tan': tan, 'log': log, 'sqrt': sqrt},
+                         local_dict=local_dict,
                          transformations=transformations)
         
+        for name, value in parameters.items():
+            expr = expr.subs(param_symbols[name], value)
+        
         f = lambdify((x, y), expr, modules=['numpy'])
+        
         try:
             test_result = f(1.0, 1.0)
             if test_result is None:
@@ -72,7 +115,6 @@ def parse_equation(equation_str):
         }
     except Exception as e:
         error_msg = str(e)
-    
         if "unexpected EOF" in error_msg.lower():
             return {'success': False, 'error': "Incomplete expression. Check for missing parentheses or operators."}
         elif "invalid syntax" in error_msg.lower():
@@ -90,11 +132,22 @@ def simulate():
     data = request.get_json()
     
     equation_str = data.get('equation', '').strip()
+    param_str = data.get('parameters', '').strip()
     x0 = data.get('x0', '')
     y0 = data.get('y0', '')
+    x_start = data.get('x_start', '')
+    x_end = data.get('x_end', '')
+    step_size = data.get('step_size', '')
     
+    parameters, param_error = parse_parameters(param_str)
+    if param_error:
+        return jsonify({
+            'status': 'error',
+            'message': param_error,
+            'error_type': 'validation'
+        }), 400
     
-    is_valid, error_msg = validate_equation_input(equation_str)
+    is_valid, error_msg = validate_equation_input(equation_str, set(parameters.keys()))
     if not is_valid:
         return jsonify({
             'status': 'error',
@@ -119,7 +172,61 @@ def simulate():
             'error_type': 'validation'
         }), 400
     
-    parse_result = parse_equation(equation_str)
+    try:
+        if x_start == '' or x_end == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Domain range (start x and end x) is required',
+                'error_type': 'validation'
+            }), 400
+        
+        x_start_val = float(x_start)
+        x_end_val = float(x_end)
+        
+        if x_start_val >= x_end_val:
+            return jsonify({
+                'status': 'error',
+                'message': 'End x must be greater than Start x',
+                'error_type': 'validation'
+            }), 400
+    except ValueError:
+        return jsonify({
+            'status': 'error',
+            'message': 'Domain range values must be valid numbers',
+            'error_type': 'validation'
+        }), 400
+    
+    try:
+        if step_size == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Step size (h) is required',
+                'error_type': 'validation'
+            }), 400
+        
+        step_size_val = float(step_size)
+        
+        if step_size_val <= 0:
+            return jsonify({
+                'status': 'error',
+                'message': 'Step size must be greater than 0',
+                'error_type': 'validation'
+            }), 400
+        
+        if step_size_val > (x_end_val - x_start_val):
+            return jsonify({
+                'status': 'error',
+                'message': 'Step size is too large for the given domain',
+                'error_type': 'validation'
+            }), 400
+    except ValueError:
+        return jsonify({
+            'status': 'error',
+            'message': 'Step size must be a valid number',
+            'error_type': 'validation'
+        }), 400
+    
+    parse_result = parse_equation(equation_str, parameters)
     
     if not parse_result['success']:
         return jsonify({
@@ -131,15 +238,17 @@ def simulate():
     response = {
         'status': 'success',
         'equation': equation_str,
+        'parameters': parameters,
         'parsed_expression': parse_result['expression'],
         'x0': x0_val,
         'y0': y0_val,
-        'message': 'Equation successfully parsed and validated'
+        'x_start': x_start_val,
+        'x_end': x_end_val,
+        'step_size': step_size_val,
+        'message': 'Equation successfully apply parsed and validated'
     }
     
     return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-

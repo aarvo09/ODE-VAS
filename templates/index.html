@@ -14,9 +14,17 @@
             
             <div class="input-group">
                 <label for="equation">Differential Equation (dy/dx = f(x, y))</label>
-                <input type="text" id="equation" placeholder="e.g., x + y, sin(x)*y, exp(x)">
+                <input type="text" id="equation" placeholder="e.g., x + y, -k*y, sin(x)*y">
                 <small style="color: #666; font-size: 0.8em; display: block; margin-top: 4px;">
-                    Supported: x, y, +, -, *, /, sin, cos, exp, tan, log, sqrt
+                    Supported: x, y, +, -, *, /, sin, cos, exp, tan, log, sqrt, parameters (a-z)
+                </small>
+            </div>
+            
+            <div class="input-group">
+                <label for="parameters">Parameters (optional)</label>
+                <input type="text" id="parameters" placeholder="e.g., k=0.5, a=2, b=1.5">
+                <small style="color: #666; font-size: 0.8em; display: block; margin-top: 4px;">
+                    Format: name=value separated by commas. Use these in your equation.
                 </small>
             </div>
             
@@ -32,6 +40,29 @@
                 </div>
             </div>
             
+            <div class="input-group">
+                <label for="domain">Solution Domain</label>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="x_start" style="font-size: 0.85em;">Start x</label>
+                        <input type="number" id="x_start" step="0.1" placeholder="0" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="x_end" style="font-size: 0.85em;">End x</label>
+                        <input type="number" id="x_end" step="0.1" placeholder="10" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="step_size">Step Size (h)</label>
+                <input type="number" id="step_size" step="0.01" placeholder="0.1" min="0.001" required>
+                <small style="color: #666; font-size: 0.8em; display: block; margin-top: 4px;">
+                    Smaller steps = more accurate but slower
+                </small>
+            </div>
+            
             <button id="simulate-btn" class="simulate-btn">Simulate</button>
             
             <div id="output" class="output"></div>
@@ -45,10 +76,14 @@
     <script>
         document.getElementById('simulate-btn').addEventListener('click', function() {
             const equation = document.getElementById('equation').value;
+            const parameters = document.getElementById('parameters').value;
             const x0 = document.getElementById('x0').value;
             const y0 = document.getElementById('y0').value;
+            const x_start = document.getElementById('x_start').value;
+            const x_end = document.getElementById('x_end').value;
+            const step_size = document.getElementById('step_size').value;
             
-         
+            // Clear previous output
             const outputDiv = document.getElementById('output');
             outputDiv.innerHTML = '<em>Processing...</em>';
             outputDiv.style.backgroundColor = '#e3f2fd';
@@ -61,8 +96,12 @@
                 },
                 body: JSON.stringify({
                     equation: equation,
+                    parameters: parameters,
                     x0: x0,
-                    y0: y0
+                    y0: y0,
+                    x_start: x_start,
+                    x_end: x_end,
+                    step_size: step_size
                 })
             })
             .then(response => {
@@ -74,16 +113,27 @@
             })
             .then(({status, data}) => {
                 if (status === 200 && data.status === 'success') {
-                    outputDiv.innerHTML = `
+                    let outputHTML = `
                         <div style="margin-bottom: 8px;">
-                            <strong style="color: #2e7d32;">✓ Successfully Parsed</strong>
+                            <strong style="color: #2e7d32;">✓ Successfully Configured</strong>
                         </div>
                         <div style="font-size: 0.85em; line-height: 1.8;">
-                            <strong>Input:</strong> dy/dx = ${escapeHtml(data.equation)}<br>
-                            <strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}<br>
-                            <strong>Initial:</strong> x₀ = ${data.x0}, y₀ = ${data.y0}
+                            <strong>Input:</strong> dy/dx = ${escapeHtml(data.equation)}<br>`;
+                    
+                    if (data.parameters && Object.keys(data.parameters).length > 0) {
+                        const paramStr = Object.entries(data.parameters)
+                            .map(([k, v]) => `${k}=${v}`)
+                            .join(', ');
+                        outputHTML += `<strong>Parameters:</strong> ${escapeHtml(paramStr)}<br>`;
+                    }
+                    
+                    outputHTML += `<strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}<br>
+                            <strong>Initial:</strong> x₀ = ${data.x0}, y₀ = ${data.y0}<br>
+                            <strong>Domain:</strong> x ∈ [${data.x_start}, ${data.x_end}]<br>
+                            <strong>Step size:</strong> h = ${data.step_size}
                         </div>
                     `;
+                    outputDiv.innerHTML = outputHTML;
                     outputDiv.style.backgroundColor = '#d4edda';
                     outputDiv.style.color = '#155724';
                 } else {
@@ -135,3 +185,5 @@
     </script>
 </body>
 </html>
+
+

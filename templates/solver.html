@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ODE Visualizer</title>
+    <title>ODE Solver - ODE VAS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-
         <div class="input-panel">
-            <h2>Differential Equation Solver</h2>
+            <div class="header-nav">
+                <a href="/" class="back-link">← Home</a>
+                <h2>Differential Equation Solver</h2>
+            </div>
             
             <div class="input-group">
                 <label for="equation">Differential Equation (dy/dx = f(x, y))</label>
@@ -82,7 +84,7 @@
             const x_start = document.getElementById('x_start').value;
             const x_end = document.getElementById('x_end').value;
             const step_size = document.getElementById('step_size').value;
-        
+            
             const outputDiv = document.getElementById('output');
             outputDiv.innerHTML = '<em>Processing...</em>';
             outputDiv.style.backgroundColor = '#e3f2fd';
@@ -104,7 +106,6 @@
                 })
             })
             .then(response => {
-            
                 return response.json().then(data => ({
                     status: response.status,
                     data: data
@@ -183,5 +184,3 @@
     </script>
 </body>
 </html>
-
-

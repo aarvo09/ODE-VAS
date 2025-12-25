@@ -10,10 +10,6 @@ SUPPORTED_SYMBOLS = {'x', 'y'}
 ALLOWED_CHARS = set('xy0123456789+-*/^(). abcdefghijklmnopqrstuvwz')
 
 def parse_parameters(param_str):
-    """
-    Parse parameter string like "k=0.5, a=2, b=1.5" into a dictionary.
-    Returns (params_dict, error_message)
-    """
     if not param_str or param_str.strip() == '':
         return {}, None
     
@@ -45,11 +41,6 @@ def parse_parameters(param_str):
         return None, f"Error parsing parameters: {str(e)}"
 
 def validate_equation_input(equation_str, param_names=None):
-    """
-    Validate equation input before parsing.
-    Returns (is_valid, error_message)
-    param_names: set of allowed parameter names
-    """
     if param_names is None:
         param_names = set()
     
@@ -76,14 +67,6 @@ def validate_equation_input(equation_str, param_names=None):
     return True, ""
 
 def parse_equation(equation_str, parameters=None):
-    """
-    Parse user input equation string into a callable function.
-    Supports: x, y, +, -, *, /, sin, cos, exp, tan, log, sqrt, and parameters
-    
-    Args:
-        equation_str: The equation string
-        parameters: Dictionary of parameter names and values to substitute
-    """
     if parameters is None:
         parameters = {}
     
@@ -112,7 +95,6 @@ def parse_equation(equation_str, parameters=None):
         
         try:
             test_result = f(1.0, 1.0)
-            # Check if result is valid
             if test_result is None:
                 raise ValueError("Function returned None")
         except Exception as runtime_error:
@@ -133,7 +115,6 @@ def parse_equation(equation_str, parameters=None):
         }
     except Exception as e:
         error_msg = str(e)
-        # Provide more user-friendly error messages
         if "unexpected EOF" in error_msg.lower():
             return {'success': False, 'error': "Incomplete expression. Check for missing parentheses or operators."}
         elif "invalid syntax" in error_msg.lower():
@@ -144,8 +125,14 @@ def parse_equation(equation_str, parameters=None):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('home.html')
 
+@app.route('/solver')
+def solver():
+    return render_template('solver.html')
+@app.route('/quick-solver')
+def quick_solver():
+    return render_template('quick-solver.html')
 @app.route('/simulate', methods=['POST'])
 def simulate():
     data = request.get_json()
@@ -158,7 +145,6 @@ def simulate():
     x_end = data.get('x_end', '')
     step_size = data.get('step_size', '')
     
-    # Parse parameters first
     parameters, param_error = parse_parameters(param_str)
     if param_error:
         return jsonify({
@@ -167,7 +153,7 @@ def simulate():
             'error_type': 'validation'
         }), 400
     
-    # Validate equation input with parameter names
+
     is_valid, error_msg = validate_equation_input(equation_str, set(parameters.keys()))
     if not is_valid:
         return jsonify({
@@ -176,7 +162,6 @@ def simulate():
             'error_type': 'validation'
         }), 400
     
-    # Validate initial conditions
     try:
         if x0 == '' or y0 == '':
             return jsonify({
@@ -194,7 +179,6 @@ def simulate():
             'error_type': 'validation'
         }), 400
     
-    # Validate domain range
     try:
         if x_start == '' or x_end == '':
             return jsonify({
@@ -219,7 +203,6 @@ def simulate():
             'error_type': 'validation'
         }), 400
     
-    # Validate step size
     try:
         if step_size == '':
             return jsonify({
@@ -276,3 +259,4 @@ def simulate():
 
 if __name__ == '__main__':
     app.run(debug=True)
+

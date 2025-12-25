@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Solver - ODE VAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='quick-solver.css') }}">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="home-btn">← Back to Home</a>
+        
+        <div class="solver-card">
+            <h1>Quick ODE Solver</h1>
+            <p class="subtitle">Get numerical solutions fast - no visualization</p>
+            
+            <form id="solver-form">
+                <div class="form-group">
+                    <label for="equation">Differential Equation (dy/dx = ...)</label>
+                    <input type="text" id="equation" placeholder="e.g., x + y, -k*y" required>
+                    <small>Supports: x, y, +, -, *, /, sin, cos, exp, tan, log, sqrt, parameters</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="parameters">Parameters (optional)</label>
+                    <input type="text" id="parameters" placeholder="e.g., k=0.5, a=2">
+                    <small>Format: name=value, separated by commas</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="x0">x₀</label>
+                        <input type="number" id="x0" step="0.1" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="y0">y₀</label>
+                        <input type="number" id="y0" step="0.1" value="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="x_start">Start x</label>
+                        <input type="number" id="x_start" step="0.1" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="x_end">End x</label>
+                        <input type="number" id="x_end" step="0.1" value="10" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="step_size">Step Size (h)</label>
+                    <input type="number" id="step_size" step="0.01" value="0.1" min="0.001" required>
+                    <small>Smaller = more accurate but slower</small>
+                </div>
+                
+                <button type="submit" class="solve-btn">Solve</button>
+            </form>
+            
+            <div id="result" class="result-area" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('solver-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const equation = document.getElementById('equation').value;
+            const parameters = document.getElementById('parameters').value;
+            const x0 = document.getElementById('x0').value;
+            const y0 = document.getElementById('y0').value;
+            const x_start = document.getElementById('x_start').value;
+            const x_end = document.getElementById('x_end').value;
+            const step_size = document.getElementById('step_size').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result-area processing';
+            resultDiv.innerHTML = '<p>🔄 Processing...</p>';
+            
+            fetch('/simulate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    equation: equation,
+                    parameters: parameters,
+                    x0: x0,
+                    y0: y0,
+                    x_start: x_start,
+                    x_end: x_end,
+                    step_size: step_size
+                })
+            })
+            .then(response => {
+                return response.json().then(data => ({
+                    status: response.status,
+                    data: data
+                }));
+            })
+            .then(({status, data}) => {
+                if (status === 200 && data.status === 'success') {
+                    let html = `
+                        <div class="success-header">
+                            <h3>✓ Solution Configured</h3>
+                        </div>
+                        <div class="result-content">
+                            <div class="result-row">
+                                <strong>Equation:</strong> dy/dx = ${escapeHtml(data.equation)}
+                            </div>`;
+                    
+                    if (data.parameters && Object.keys(data.parameters).length > 0) {
+                        const paramStr = Object.entries(data.parameters)
+                            .map(([k, v]) => `${k}=${v}`)
+                            .join(', ');
+                        html += `
+                            <div class="result-row">
+                                <strong>Parameters:</strong> ${escapeHtml(paramStr)}
+                            </div>`;
+                    }
+                    
+                    html += `
+                            <div class="result-row">
+                                <strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}
+                            </div>
+                            <div class="result-row">
+                                <strong>Initial Condition:</strong> (${data.x0}, ${data.y0})
+                            </div>
+                            <div class="result-row">
+                                <strong>Domain:</strong> x ∈ [${data.x_start}, ${data.x_end}]
+                            </div>
+                            <div class="result-row">
+                                <strong>Step Size:</strong> h = ${data.step_size}
+                            </div>
+                        </div>
+                        <div class="info-box">
+                            <strong>Note:</strong> Numerical methods (Euler, RK4) will be implemented in the next phase.
+                        </div>
+                    `;
+                    
+                    resultDiv.className = 'result-area success';
+                    resultDiv.innerHTML = html;
+                } else {
+                    const errorType = data.error_type || 'unknown';
+                    let errorIcon = '✗';
+                    
+                    if (errorType === 'validation' || errorType === 'parse') {
+                        errorIcon = '⚠';
+                    }
+                    
+                    resultDiv.className = 'result-area error';
+                    resultDiv.innerHTML = `
+                        <div class="error-header">
+                            <h3>${errorIcon} Error</h3>
+                        </div>
+                        <p>${escapeHtml(data.message)}</p>
+                    `;
+                }
+            })
+            .catch(error => {
+                resultDiv.className = 'result-area error';
+                resultDiv.innerHTML = `
+                    <div class="error-header">
+                        <h3>✗ Connection Error</h3>
+                    </div>
+                    <p>Failed to connect to server. Please make sure the server is running.</p>
+                `;
+                console.error('Error:', error);
+            });
+        });
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ODE VAS - Ordinary Differential Equation Visualizer - Analyzer & Solver</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+</head>
+<body>
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="main-title">ODE VAS</h1>
+            <p class="subtitle">Ordinary Differential Equation Visualizer & Analyzer</p>
+            <p class="description">
+                Solve, visualize, and analyze first-order differential equations using 
+                powerful numerical methods including Euler, Improved Euler, and Runge-Kutta (RK4).
+            </p>
+            
+            <div class="modes-container">
+                <div class="mode-card">
+                    <div class="mode-icon"></div>
+                    <h3>Interactive Visualizer</h3>
+                    <p>Full-featured mode with interactive graphs, slope fields, and method comparison</p>
+                    <a href="/solver?mode=visualize" class="mode-btn primary">Visualize & Solve</a>
+                </div>
+                
+                <div class="mode-card">
+                    <div class="mode-icon"></div>
+                    <h3>Quick Solver</h3>
+                    <p>Get numerical solutions quickly without visualization - perfect for calculations</p>
+                    <a href="/quick-solver" class="mode-btn secondary">Just Solve</a>
+                </div>
+                
+                <div class="mode-card">
+                    <div class="mode-icon"></div>
+                    <h3>Advanced Mode</h3>
+                    <p>Parameter variation, stability analysis, and step-size control for in-depth study</p>
+                    <a href="/solver?mode=advanced" class="mode-btn advanced">Advanced Analysis</a>
+                </div>
+            </div>
+            
+            <div class="features">
+                <h2>Features</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="feature-icon"></span>
+                        <span>Three numerical methods: Euler, Improved Euler, RK4</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon"></span>
+                        <span>Parameterized equations support</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon"></span>
+                        <span>Interactive solution curves & slope fields</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon"></span>
+                        <span>Method comparison & accuracy analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon"></span>
+                        <span>Real-time equation validation</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon"></span>
+                        <span>Step-size control & domain configuration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>ODE VAS - Educational tool for differential equations analysis</p>
+    </footer>
+</body>
+</html>

@@ -125,8 +125,14 @@ def parse_equation(equation_str, parameters=None):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('home.html')
 
+@app.route('/solver')
+def solver():
+    return render_template('solver.html')
+@app.route('/quick-solver')
+def quick_solver():
+    return render_template('quick-solver.html')
 @app.route('/simulate', methods=['POST'])
 def simulate():
     data = request.get_json()
@@ -147,6 +153,7 @@ def simulate():
             'error_type': 'validation'
         }), 400
     
+
     is_valid, error_msg = validate_equation_input(equation_str, set(parameters.keys()))
     if not is_valid:
         return jsonify({
@@ -252,3 +259,4 @@ def simulate():
 
 if __name__ == '__main__':
     app.run(debug=True)
+

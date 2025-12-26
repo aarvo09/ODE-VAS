@@ -259,6 +259,38 @@ h1 {
     margin: 0;
 }
 
+.visualization-placeholder {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    border: 2px dashed #9e9e9e;
+    border-radius: 12px;
+    padding: 60px 20px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.placeholder-icon {
+    font-size: 4em;
+    margin-bottom: 15px;
+    opacity: 0.6;
+}
+
+.visualization-placeholder h3 {
+    color: #616161;
+    font-size: 1.4em;
+    margin-bottom: 10px;
+}
+
+.visualization-placeholder p {
+    color: #757575;
+    font-size: 1em;
+    margin-bottom: 8px;
+}
+
+.visualization-placeholder small {
+    color: #9e9e9e;
+    font-size: 0.85em;
+}
+
 .results-table-container {
     margin-top: 20px;
     max-height: 500px;

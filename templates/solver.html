@@ -3,107 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ODE Solver - ODE VAS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Interactive Visualizer - ODE VAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='visualizer.css') }}">
 </head>
 <body>
     <div class="container">
-        <div class="input-panel">
-            <div class="header-nav">
-                <a href="/" class="back-link">← Home</a>
-                <h2>Differential Equation Solver</h2>
-            </div>
+        <a href="/" class="home-btn">← Back to Home</a>
+        
+        <div class="solver-card">
+            <h1>Interactive ODE Visualizer</h1>
+            <p class="subtitle">Solve and visualize differential equations in real-time</p>
             
-            <div class="input-group">
-                <label for="equation">Differential Equation (dy/dx = f(x, y))</label>
-                <input type="text" id="equation" placeholder="e.g., x + y, -k*y, sin(x)*y">
-                <small style="color: #666; font-size: 0.8em; display: block; margin-top: 4px;">
-                    Supported: x, y, +, -, *, /, sin, cos, exp, tan, log, sqrt, parameters (a-z)
-                </small>
-            </div>
-            
-            <div class="input-group">
-                <label for="parameters">Parameters (optional)</label>
-                <input type="text" id="parameters" placeholder="e.g., k=0.5, a=2, b=1.5">
-                <small style="color: #666; font-size: 0.8em; display: block; margin-top: 4px;">
-                    Format: name=value separated by commas. Use these in your equation.
-                </small>
-            </div>
-            
-            <div class="input-row">
-                <div class="input-group">
-                    <label for="x0">Initial x₀</label>
-                    <input type="number" id="x0" step="0.1" placeholder="0" required>
+            <form id="visualizer-form">
+                <div class="form-group">
+                    <label for="method">Solving Method</label>
+                    <select id="method" required>
+                        <option value="euler">Euler Method</option>
+                        <option value="direct_integration">Basic Direct Integration</option>
+                        <option value="separation">Separation of Variables</option>
+                        <option value="integrating_factor">Integrating Factor</option>
+                        <option value="substitution">Substitution Method</option>
+                    </select>
+                    <small id="method-desc">Numerical method for solving ODEs</small>
                 </div>
                 
-                <div class="input-group">
-                    <label for="y0">Initial y₀</label>
-                    <input type="number" id="y0" step="0.1" placeholder="1" required>
+                <div class="form-group">
+                    <label for="parameters">Parameters (optional)</label>
+                    <input type="text" id="parameters" placeholder="e.g., k=0.5, a=2">
+                    <small>Format: name=value, separated by commas</small>
                 </div>
-            </div>
-            
-            <div class="input-group">
-                <label for="domain">Solution Domain</label>
-                <div class="input-row">
-                    <div class="input-group">
-                        <label for="x_start" style="font-size: 0.85em;">Start x</label>
-                        <input type="number" id="x_start" step="0.1" placeholder="0" required>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="x0">x₀ (Initial X)</label>
+                        <input type="number" id="x0" step="0.1" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="y0">y₀ (Initial Y)</label>
+                        <input type="number" id="y0" step="0.1" value="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="x_end">Domain End (x_end)</label>
+                    <input type="number" id="x_end" step="0.1" value="10" required>
+                    <small>Final value of x where solution stops</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eval_points">Number of Evaluation Points</label>
+                    <input type="number" id="eval_points" step="1" value="100" min="10" required>
+                    <small>How many coordinates to generate</small>
+                </div>
+                
+                <div class="euler-inputs">
+                    <div class="form-group">
+                        <label for="equation_euler">f(x, y) - Full Derivative Expression</label>
+                        <input type="text" id="equation_euler" placeholder="e.g., x + y, y**2 - x" required>
+                        <small>Supports: x, y, +, -, *, /, **, sin, cos, exp, tan, log, sqrt</small>
                     </div>
                     
-                    <div class="input-group">
-                        <label for="x_end" style="font-size: 0.85em;">End x</label>
-                        <input type="number" id="x_end" step="0.1" placeholder="10" required>
+                    <div class="form-group">
+                        <label for="step_size">Step Size (h)</label>
+                        <input type="number" id="step_size" step="0.01" value="0.1" min="0.001" required>
+                        <small>Decimal value for calculation jumps</small>
                     </div>
                 </div>
+                
+                <div class="direct-inputs" style="display: none;">
+                    <div class="form-group">
+                        <label for="equation_direct">f(x) - Function of x only</label>
+                        <input type="text" id="equation_direct" placeholder="e.g., x**2 + 5, sin(x)">
+                        <small>Since y' = f(x), input should only contain x</small>
+                    </div>
+                </div>
+                
+                <div class="separation-inputs" style="display: none;">
+                    <div class="form-group">
+                        <label for="g_x">g(x) - Function of x</label>
+                        <input type="text" id="g_x" placeholder="e.g., x**2, cos(x)">
+                        <small>For y' = g(x) · h(y)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="h_y">h(y) - Function of y</label>
+                        <input type="text" id="h_y" placeholder="e.g., y, y**2">
+                        <small>For y' = g(x) · h(y)</small>
+                    </div>
+                </div>
+                
+                <div class="integrating-inputs" style="display: none;">
+                    <div class="form-group">
+                        <label for="p_x">P(x) - Coefficient Function</label>
+                        <input type="text" id="p_x" placeholder="e.g., 2*x, 1/x">
+                        <small>For y' + P(x)y = Q(x)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="q_x">Q(x) - Right-hand Side Function</label>
+                        <input type="text" id="q_x" placeholder="e.g., x**2, sin(x)">
+                        <small>For y' + P(x)y = Q(x)</small>
+                    </div>
+                </div>
+                
+                <div class="substitution-inputs" style="display: none;">
+                    <div class="form-group">
+                        <label for="equation_sub">f(x, y) - Original ODE</label>
+                        <input type="text" id="equation_sub" placeholder="e.g., (y - x)/(y + x)">
+                        <small>The original derivative expression</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="substitution_var">Substitution Variable (u)</label>
+                        <input type="text" id="substitution_var" placeholder="e.g., y/x, a*x + b*y + c">
+                        <small>The substitution rule to use</small>
+                    </div>
+                </div>
+                
+                <button type="submit" class="solve-btn">🎨 Visualize</button>
+            </form>
+            
+            <div id="result" class="result-area" style="display: none;"></div>
+            
+            <div class="visualization-placeholder">
+                <div class="placeholder-icon">📊</div>
+                <h3>Interactive Graph</h3>
+                <p>Your ODE solution will be visualized here</p>
+                <small>Enter an equation and click Visualize to see the solution curve</small>
             </div>
-            
-            <div class="input-group">
-                <label for="step_size">Step Size (h)</label>
-                <input type="number" id="step_size" step="0.01" placeholder="0.1" min="0.001" required>
-                <small style="color: #666; font-size: 0.8em; display: block; margin-top: 4px;">
-                    Smaller steps = more accurate but slower
-                </small>
-            </div>
-            
-            <button id="simulate-btn" class="simulate-btn">Simulate</button>
-            
-            <div id="output" class="output"></div>
-        </div>
-        
-        <div class="visualization-area">
-            <p>Visualization will appear here</p>
         </div>
     </div>
 
     <script>
-        document.getElementById('simulate-btn').addEventListener('click', function() {
-            const equation = document.getElementById('equation').value;
+        const methodDescriptions = {
+            'euler': 'Numerical method - requires f(x,y) and step size',
+            'direct_integration': 'For y\' = f(x) - function of x only',
+            'separation': 'For y\' = g(x)·h(y) - separable equations',
+            'integrating_factor': 'For y\' + P(x)y = Q(x) - linear first-order',
+            'substitution': 'Uses variable substitution u for transformation'
+        };
+        
+        document.getElementById('method').addEventListener('change', function() {
+            const method = this.value;
+            const eulerInputs = document.querySelector('.euler-inputs');
+            const directInputs = document.querySelector('.direct-inputs');
+            const separationInputs = document.querySelector('.separation-inputs');
+            const integratingInputs = document.querySelector('.integrating-inputs');
+            const substitutionInputs = document.querySelector('.substitution-inputs');
+            const methodDesc = document.getElementById('method-desc');
+            
+            methodDesc.textContent = methodDescriptions[method];
+            
+            eulerInputs.style.display = 'none';
+            directInputs.style.display = 'none';
+            separationInputs.style.display = 'none';
+            integratingInputs.style.display = 'none';
+            substitutionInputs.style.display = 'none';
+            
+            document.getElementById('equation_euler').required = false;
+            document.getElementById('step_size').required = false;
+            document.getElementById('equation_direct').required = false;
+            document.getElementById('g_x').required = false;
+            document.getElementById('h_y').required = false;
+            document.getElementById('p_x').required = false;
+            document.getElementById('q_x').required = false;
+            document.getElementById('equation_sub').required = false;
+            document.getElementById('substitution_var').required = false;
+            
+            if (method === 'euler') {
+                eulerInputs.style.display = 'block';
+                document.getElementById('equation_euler').required = true;
+                document.getElementById('step_size').required = true;
+            } else if (method === 'direct_integration') {
+                directInputs.style.display = 'block';
+                document.getElementById('equation_direct').required = true;
+            } else if (method === 'separation') {
+                separationInputs.style.display = 'block';
+                document.getElementById('g_x').required = true;
+                document.getElementById('h_y').required = true;
+            } else if (method === 'integrating_factor') {
+                integratingInputs.style.display = 'block';
+                document.getElementById('p_x').required = true;
+                document.getElementById('q_x').required = true;
+            } else if (method === 'substitution') {
+                substitutionInputs.style.display = 'block';
+                document.getElementById('equation_sub').required = true;
+                document.getElementById('substitution_var').required = true;
+            }
+        });
+        
+        document.getElementById('visualizer-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const method = document.getElementById('method').value;
             const parameters = document.getElementById('parameters').value;
             const x0 = document.getElementById('x0').value;
             const y0 = document.getElementById('y0').value;
-            const x_start = document.getElementById('x_start').value;
             const x_end = document.getElementById('x_end').value;
-            const step_size = document.getElementById('step_size').value;
+            const eval_points = document.getElementById('eval_points').value;
             
-            const outputDiv = document.getElementById('output');
-            outputDiv.innerHTML = '<em>Processing...</em>';
-            outputDiv.style.backgroundColor = '#e3f2fd';
-            outputDiv.style.color = '#1976d2';
+            let payload = {
+                method: method,
+                parameters: parameters,
+                x0: x0,
+                y0: y0,
+                x_end: x_end,
+                eval_points: eval_points
+            };
+            
+            if (method === 'euler') {
+                payload.equation = document.getElementById('equation_euler').value;
+                payload.step_size = document.getElementById('step_size').value;
+            } else if (method === 'direct_integration') {
+                payload.equation = document.getElementById('equation_direct').value;
+            } else if (method === 'separation') {
+                payload.g_x = document.getElementById('g_x').value;
+                payload.h_y = document.getElementById('h_y').value;
+            } else if (method === 'integrating_factor') {
+                payload.p_x = document.getElementById('p_x').value;
+                payload.q_x = document.getElementById('q_x').value;
+            } else if (method === 'substitution') {
+                payload.equation = document.getElementById('equation_sub').value;
+                payload.substitution = document.getElementById('substitution_var').value;
+            }
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result-area processing';
+            resultDiv.innerHTML = '<p>🔄 Processing...</p>';
             
             fetch('/simulate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    equation: equation,
-                    parameters: parameters,
-                    x0: x0,
-                    y0: y0,
-                    x_start: x_start,
-                    x_end: x_end,
-                    step_size: step_size
-                })
+                body: JSON.stringify(payload)
             })
             .then(response => {
                 return response.json().then(data => ({
@@ -113,65 +247,83 @@
             })
             .then(({status, data}) => {
                 if (status === 200 && data.status === 'success') {
-                    let outputHTML = `
-                        <div style="margin-bottom: 8px;">
-                            <strong style="color: #2e7d32;">✓ Successfully Configured</strong>
+                    let html = `
+                        <div class="success-header">
+                            <h3>✓ Configuration Successful</h3>
                         </div>
-                        <div style="font-size: 0.85em; line-height: 1.8;">
-                            <strong>Input:</strong> dy/dx = ${escapeHtml(data.equation)}<br>`;
+                        <div class="result-content">
+                            <div class="result-row">
+                                <strong>Equation:</strong> dy/dx = ${escapeHtml(data.equation)}
+                            </div>`;
                     
                     if (data.parameters && Object.keys(data.parameters).length > 0) {
                         const paramStr = Object.entries(data.parameters)
                             .map(([k, v]) => `${k}=${v}`)
                             .join(', ');
-                        outputHTML += `<strong>Parameters:</strong> ${escapeHtml(paramStr)}<br>`;
+                        html += `
+                            <div class="result-row">
+                                <strong>Parameters:</strong> ${escapeHtml(paramStr)}
+                            </div>`;
                     }
                     
-                    outputHTML += `<strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}<br>
-                            <strong>Initial:</strong> x₀ = ${data.x0}, y₀ = ${data.y0}<br>
-                            <strong>Domain:</strong> x ∈ [${data.x_start}, ${data.x_end}]<br>
-                            <strong>Step size:</strong> h = ${data.step_size}
+                    html += `
+                            <div class="result-row">
+                                <strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}
+                            </div>
+                            <div class="result-row">
+                                <strong>Method:</strong> ${data.method}
+                            </div>
+                            <div class="result-row">
+                                <strong>Initial Condition:</strong> (${data.x0}, ${data.y0})
+                            </div>
+                            <div class="result-row">
+                                <strong>Domain End:</strong> x_end = ${data.x_end}
+                            </div>`;
+                    
+                    if (data.step_size !== undefined) {
+                        html += `
+                            <div class="result-row">
+                                <strong>Step Size:</strong> h = ${data.step_size}
+                            </div>`;
+                    }
+                    
+                    if (data.eval_points !== undefined) {
+                        html += `
+                            <div class="result-row">
+                                <strong>Evaluation Points:</strong> ${data.eval_points}
+                            </div>`;
+                    }
+                    
+                    html += `
                         </div>
                     `;
-                    outputDiv.innerHTML = outputHTML;
-                    outputDiv.style.backgroundColor = '#d4edda';
-                    outputDiv.style.color = '#155724';
+                    resultDiv.className = 'result-area success';
+                    resultDiv.innerHTML = html;
                 } else {
                     const errorType = data.error_type || 'unknown';
                     let errorIcon = '✗';
-                    let errorTitle = 'Error';
                     
-                    if (errorType === 'validation') {
+                    if (errorType === 'validation' || errorType === 'parse') {
                         errorIcon = '⚠';
-                        errorTitle = 'Validation Error';
-                    } else if (errorType === 'parse') {
-                        errorIcon = '⚠';
-                        errorTitle = 'Parse Error';
                     }
                     
-                    outputDiv.innerHTML = `
-                        <div style="margin-bottom: 8px;">
-                            <strong style="color: #c62828;">${errorIcon} ${errorTitle}</strong>
+                    resultDiv.className = 'result-area error';
+                    resultDiv.innerHTML = `
+                        <div class="error-header">
+                            <h3>${errorIcon} Error</h3>
                         </div>
-                        <div style="font-size: 0.85em;">
-                            ${escapeHtml(data.message)}
-                        </div>
+                        <p>${escapeHtml(data.message)}</p>
                     `;
-                    outputDiv.style.backgroundColor = '#f8d7da';
-                    outputDiv.style.color = '#721c24';
                 }
             })
             .catch(error => {
-                outputDiv.innerHTML = `
-                    <div style="margin-bottom: 8px;">
-                        <strong style="color: #c62828;">✗ Connection Error</strong>
+                resultDiv.className = 'result-area error';
+                resultDiv.innerHTML = `
+                    <div class="error-header">
+                        <h3>✗ Connection Error</h3>
                     </div>
-                    <div style="font-size: 0.85em;">
-                        Failed to connect to server. Please make sure the server is running.
-                    </div>
+                    <p>Failed to connect to server. Please make sure the server is running.</p>
                 `;
-                outputDiv.style.backgroundColor = '#f8d7da';
-                outputDiv.style.color = '#721c24';
                 console.error('Error:', error);
             });
         });
@@ -183,4 +335,4 @@
         }
     </script>
 </body>
-
+</html>

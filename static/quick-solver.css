@@ -67,18 +67,25 @@ h1 {
     font-size: 0.95em;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 12px 15px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     font-size: 1em;
     transition: border-color 0.3s;
+    background: white;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #f5576c;
+}
+
+.form-group select {
+    cursor: pointer;
 }
 
 .form-group small {

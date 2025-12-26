@@ -138,6 +138,26 @@ def euler_method(f, x0, y0, x_end, h):
     
     return x_values, y_values
 
+def direct_integration_method(f, x0, y0, x_end, h):
+    return euler_method(f, x0, y0, x_end, h)
+
+def separation_of_variables_method(f, x0, y0, x_end, h):
+    return euler_method(f, x0, y0, x_end, h)
+
+def integrating_factor_method(f, x0, y0, x_end, h):
+    return euler_method(f, x0, y0, x_end, h)
+
+def substitution_method(f, x0, y0, x_end, h):
+    return euler_method(f, x0, y0, x_end, h)
+
+METHODS = {
+    'euler': {'name': 'Euler Method', 'function': euler_method},
+    'direct_integration': {'name': 'Direct Integration', 'function': direct_integration_method},
+    'separation': {'name': 'Separation of Variables', 'function': separation_of_variables_method},
+    'integrating_factor': {'name': 'Integrating Factor', 'function': integrating_factor_method},
+    'substitution': {'name': 'Substitution Method', 'function': substitution_method}
+}
+
 @app.route('/')
 def index():
     return render_template('home.html')
@@ -152,28 +172,33 @@ def quick_solver():
 def simulate():
     data = request.get_json()
     
-    equation_str = data.get('equation', '').strip()
+    method_key = data.get('method', 'euler').strip()
     param_str = data.get('parameters', '').strip()
     x0 = data.get('x0', '')
     y0 = data.get('y0', '')
-    x_start = data.get('x_start', '')
     x_end = data.get('x_end', '')
+    eval_points = data.get('eval_points', '')
+    
+    equation_str = data.get('equation', '').strip()
     step_size = data.get('step_size', '')
+    g_x = data.get('g_x', '').strip()
+    h_y = data.get('h_y', '').strip()
+    p_x = data.get('p_x', '').strip()
+    q_x = data.get('q_x', '').strip()
+    substitution = data.get('substitution', '').strip()
+    
+    if method_key not in METHODS:
+        return jsonify({
+            'status': 'error',
+            'message': f'Invalid method: {method_key}. Valid methods are: {", ".join(METHODS.keys())}',
+            'error_type': 'validation'
+        }), 400
     
     parameters, param_error = parse_parameters(param_str)
     if param_error:
         return jsonify({
             'status': 'error',
             'message': param_error,
-            'error_type': 'validation'
-        }), 400
-    
-
-    is_valid, error_msg = validate_equation_input(equation_str, set(parameters.keys()))
-    if not is_valid:
-        return jsonify({
-            'status': 'error',
-            'message': error_msg,
             'error_type': 'validation'
         }), 400
     
@@ -195,60 +220,127 @@ def simulate():
         }), 400
     
     try:
-        if x_start == '' or x_end == '':
+        if x_end == '':
             return jsonify({
                 'status': 'error',
-                'message': 'Domain range (start x and end x) is required',
+                'message': 'Domain end (x_end) is required',
                 'error_type': 'validation'
             }), 400
         
-        x_start_val = float(x_start)
         x_end_val = float(x_end)
         
-        if x_start_val >= x_end_val:
+        if x_end_val <= x0_val:
             return jsonify({
                 'status': 'error',
-                'message': 'End x must be greater than Start x',
+                'message': 'Domain end must be greater than x₀',
                 'error_type': 'validation'
             }), 400
     except ValueError:
         return jsonify({
             'status': 'error',
-            'message': 'Domain range values must be valid numbers',
+            'message': 'Domain end must be a valid number',
             'error_type': 'validation'
         }), 400
     
     try:
-        if step_size == '':
+        if eval_points == '':
             return jsonify({
                 'status': 'error',
-                'message': 'Step size (h) is required',
+                'message': 'Number of evaluation points is required',
                 'error_type': 'validation'
             }), 400
         
-        step_size_val = float(step_size)
+        eval_points_val = int(eval_points)
         
-        if step_size_val <= 0:
+        if eval_points_val < 10:
             return jsonify({
                 'status': 'error',
-                'message': 'Step size must be greater than 0',
-                'error_type': 'validation'
-            }), 400
-        
-        if step_size_val > (x_end_val - x_start_val):
-            return jsonify({
-                'status': 'error',
-                'message': 'Step size is too large for the given domain',
+                'message': 'Number of evaluation points must be at least 10',
                 'error_type': 'validation'
             }), 400
     except ValueError:
         return jsonify({
             'status': 'error',
-            'message': 'Step size must be a valid number',
+            'message': 'Number of evaluation points must be a valid integer',
             'error_type': 'validation'
         }), 400
     
-    parse_result = parse_equation(equation_str, parameters)
+    if method_key == 'euler':
+        if equation_str == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Equation f(x, y) is required for Euler method',
+                'error_type': 'validation'
+            }), 400
+        
+        try:
+            if step_size == '':
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Step size (h) is required for Euler method',
+                    'error_type': 'validation'
+                }), 400
+            
+            step_size_val = float(step_size)
+            
+            if step_size_val <= 0:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Step size must be greater than 0',
+                    'error_type': 'validation'
+                }), 400
+            
+            if step_size_val > (x_end_val - x0_val):
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Step size is too large for the given domain',
+                    'error_type': 'validation'
+                }), 400
+        except ValueError:
+            return jsonify({
+                'status': 'error',
+                'message': 'Step size must be a valid number',
+                'error_type': 'validation'
+            }), 400
+    elif method_key == 'direct_integration':
+        if equation_str == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Equation f(x) is required for direct integration',
+                'error_type': 'validation'
+            }), 400
+    elif method_key == 'separation':
+        if g_x == '' or h_y == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Both g(x) and h(y) are required for separation of variables',
+                'error_type': 'validation'
+            }), 400
+    elif method_key == 'integrating_factor':
+        if p_x == '' or q_x == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Both P(x) and Q(x) are required for integrating factor method',
+                'error_type': 'validation'
+            }), 400
+    elif method_key == 'substitution':
+        if equation_str == '' or substitution == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Both equation and substitution variable are required',
+                'error_type': 'validation'
+            }), 400
+    
+    if equation_str:
+        is_valid, error_msg = validate_equation_input(equation_str, set(parameters.keys()))
+        if not is_valid:
+            return jsonify({
+                'status': 'error',
+                'message': error_msg,
+                'error_type': 'validation'
+            }), 400
+    
+    parse_result = parse_equation(equation_str if equation_str else 'x', parameters)
     
     if not parse_result['success']:
         return jsonify({
@@ -259,28 +351,44 @@ def simulate():
     
     try:
         f = parse_result['function']
-        x_values, y_values = euler_method(f, x0_val, y0_val, x_end_val, step_size_val)
+        method_info = METHODS[method_key]
+        method_function = method_info['function']
+        method_name = method_info['name']
         
-        results = [
-            {'x': float(x), 'y': float(y)} 
-            for x, y in zip(x_values, y_values)
-        ]
+        if method_key == 'euler':
+            step_calc = step_size_val
+        else:
+            step_calc = (x_end_val - x0_val) / eval_points_val
+        
+        x_values, y_values = method_function(f, x0_val, y0_val, x_end_val, step_calc)
         
         response = {
             'status': 'success',
-            'equation': equation_str,
+            'equation': equation_str if equation_str else f'Method: {method_name}',
             'parameters': parameters,
             'parsed_expression': parse_result['expression'],
             'x0': x0_val,
             'y0': y0_val,
-            'x_start': x_start_val,
             'x_end': x_end_val,
-            'step_size': step_size_val,
-            'method': 'Euler',
-            'results': results,
-            'num_points': len(results),
-            'message': 'Equation successfully solved using Euler method'
+            'method': method_name,
+            'results': [{'x': float(x), 'y': float(y)} for x, y in zip(x_values, y_values)],
+            'num_points': len(x_values),
+            'message': f'Equation successfully solved using {method_name}'
         }
+        
+        if method_key == 'euler':
+            response['step_size'] = step_size_val
+        else:
+            response['eval_points'] = eval_points_val
+        
+        if method_key == 'separation':
+            response['g_x'] = g_x
+            response['h_y'] = h_y
+        elif method_key == 'integrating_factor':
+            response['p_x'] = p_x
+            response['q_x'] = q_x
+        elif method_key == 'substitution':
+            response['substitution'] = substitution
         
         return jsonify(response)
     except Exception as e:

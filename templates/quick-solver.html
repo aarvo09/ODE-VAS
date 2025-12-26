@@ -77,7 +77,7 @@
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.className = 'result-area processing';
-            resultDiv.innerHTML = '<p>🔄 Processing...</p>';
+            resultDiv.innerHTML = '<p> Processing...</p>';
             
             fetch('/simulate', {
                 method: 'POST',
@@ -104,7 +104,7 @@
                 if (status === 200 && data.status === 'success') {
                     let html = `
                         <div class="success-header">
-                            <h3>✓ Solution Configured</h3>
+                            <h3>✓ Solution Complete</h3>
                         </div>
                         <div class="result-content">
                             <div class="result-row">
@@ -126,6 +126,9 @@
                                 <strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}
                             </div>
                             <div class="result-row">
+                                <strong>Method:</strong> ${data.method}
+                            </div>
+                            <div class="result-row">
                                 <strong>Initial Condition:</strong> (${data.x0}, ${data.y0})
                             </div>
                             <div class="result-row">
@@ -134,9 +137,62 @@
                             <div class="result-row">
                                 <strong>Step Size:</strong> h = ${data.step_size}
                             </div>
+                            <div class="result-row">
+                                <strong>Data Points:</strong> ${data.num_points}
+                            </div>
                         </div>
-                        <div class="info-box">
-                            <strong>Note:</strong> Numerical methods (Euler, RK4) will be implemented in the next phase.
+                        <div class="results-table-container">
+                            <h4>Numerical Solution</h4>
+                            <table class="results-table">
+                                <thead>
+                                    <tr>
+                                        <th>n</th>
+                                        <th>x</th>
+                                        <th>y</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                
+                    const results = data.results;
+                    const maxDisplay = 50;
+                    
+                    if (results.length <= maxDisplay) {
+                        results.forEach((point, i) => {
+                            html += `
+                                <tr>
+                                    <td>${i}</td>
+                                    <td>${point.x.toFixed(6)}</td>
+                                    <td>${point.y.toFixed(6)}</td>
+                                </tr>`;
+                        });
+                    } else {
+                        for (let i = 0; i < 20; i++) {
+                            html += `
+                                <tr>
+                                    <td>${i}</td>
+                                    <td>${results[i].x.toFixed(6)}</td>
+                                    <td>${results[i].y.toFixed(6)}</td>
+                                </tr>`;
+                        }
+                        
+                        html += `
+                            <tr class="ellipsis-row">
+                                <td colspan="3">... (${results.length - 40} points omitted) ...</td>
+                            </tr>`;
+                        
+                        for (let i = results.length - 20; i < results.length; i++) {
+                            html += `
+                                <tr>
+                                    <td>${i}</td>
+                                    <td>${results[i].x.toFixed(6)}</td>
+                                    <td>${results[i].y.toFixed(6)}</td>
+                                </tr>`;
+                        }
+                    }
+                    
+                    html += `
+                                </tbody>
+                            </table>
                         </div>
                     `;
                     

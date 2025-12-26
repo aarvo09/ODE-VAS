@@ -201,6 +201,72 @@ h1 {
     color: #856404;
 }
 
+.results-table-container {
+    margin-top: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+    border-radius: 8px;
+    background: white;
+}
+
+.results-table-container h4 {
+    color: #2e7d32;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.results-table thead {
+    background: #2e7d32;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+
+.results-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.results-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s;
+}
+
+.results-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.results-table td {
+    padding: 10px 12px;
+    color: #333;
+}
+
+.results-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.results-table tbody tr:nth-child(even):hover {
+    background-color: #f0f0f0;
+}
+
+.ellipsis-row {
+    background-color: #fff9c4 !important;
+    text-align: center;
+    font-style: italic;
+    color: #666;
+}
+
+.ellipsis-row:hover {
+    background-color: #fff59d !important;
+}
+
 @media (max-width: 768px) {
     .solver-card {
         padding: 25px;
@@ -212,5 +278,14 @@ h1 {
     
     .form-row {
         grid-template-columns: 1fr;
+    }
+    
+    .results-table {
+        font-size: 0.8em;
+    }
+    
+    .results-table th,
+    .results-table td {
+        padding: 8px 6px;
     }
 }

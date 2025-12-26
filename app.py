@@ -122,6 +122,21 @@ def parse_equation(equation_str, parameters=None):
         else:
             return {'success': False, 'error': f"Parse error: {error_msg}"}
 
+def euler_method(f, x0, y0, x_end, h):
+    x_values = [x0]
+    y_values = [y0]
+    
+    x = x0
+    y = y0
+    
+    while x < x_end:
+        y = y + h * f(x, y)
+        x = x + h
+        
+        x_values.append(x)
+        y_values.append(y)
+    
+    return x_values, y_values
 
 @app.route('/')
 def index():
@@ -242,20 +257,38 @@ def simulate():
             'error_type': 'parse'
         }), 400
     
-    response = {
-        'status': 'success',
-        'equation': equation_str,
-        'parameters': parameters,
-        'parsed_expression': parse_result['expression'],
-        'x0': x0_val,
-        'y0': y0_val,
-        'x_start': x_start_val,
-        'x_end': x_end_val,
-        'step_size': step_size_val,
-        'message': 'Equation successfully apply parsed and validated'
-    }
-    
-    return jsonify(response)
+    try:
+        f = parse_result['function']
+        x_values, y_values = euler_method(f, x0_val, y0_val, x_end_val, step_size_val)
+        
+        results = [
+            {'x': float(x), 'y': float(y)} 
+            for x, y in zip(x_values, y_values)
+        ]
+        
+        response = {
+            'status': 'success',
+            'equation': equation_str,
+            'parameters': parameters,
+            'parsed_expression': parse_result['expression'],
+            'x0': x0_val,
+            'y0': y0_val,
+            'x_start': x_start_val,
+            'x_end': x_end_val,
+            'step_size': step_size_val,
+            'method': 'Euler',
+            'results': results,
+            'num_points': len(results),
+            'message': 'Equation successfully solved using Euler method'
+        }
+        
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Calculation error: {str(e)}',
+            'error_type': 'calculation'
+        }), 400
 
 if __name__ == '__main__':
     app.run(debug=True)

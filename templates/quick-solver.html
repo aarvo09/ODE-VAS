@@ -243,7 +243,25 @@
                     let html = `
                         <div class="success-header">
                             <h3>✓ Solution Complete</h3>
-                        </div>
+                        </div>`;
+                    
+                    if (data.analytical_formula) {
+                        html += `
+                        <div class="analytical-solution-box">
+                            <h4>📐 Exact Analytical Solution</h4>
+                            <div class="formula-display">
+                                y(x) = ${escapeHtml(data.analytical_formula)}
+                            </div>
+                            <small>Particular solution with initial conditions applied</small>
+                        </div>`;
+                    } else {
+                        html += `
+                        <div class="numerical-note">
+                            <p>ℹ️ Exact formula not available - numerical approximation provided</p>
+                        </div>`;
+                    }
+                    
+                    html += `
                         <div class="result-content">
                             <div class="result-row">
                                 <strong>Equation:</strong> dy/dx = ${escapeHtml(data.equation)}
@@ -320,7 +338,7 @@
                             </div>
                         </div>
                         <div class="results-table-container">
-                            <h4>Numerical Solution</h4>
+                            <h4>${data.analytical_formula ? 'Data Table (from Analytical Formula)' : 'Numerical Solution'}</h4>
                             <table class="results-table">
                                 <thead>
                                     <tr>

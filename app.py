@@ -154,12 +154,12 @@ def direct_integration_method(f_x_str, x0, y0, x_end, num_points):
         x_values = np.linspace(x0, x_end, int(num_points))
         y_values = [float(solution_func(xi)) for xi in x_values]
         
-        return x_values.tolist(), y_values
+        return x_values.tolist(), y_values, str(solution)
     except Exception as e:
         print(f"Direct integration error: {e}")
         x_values = np.linspace(x0, x_end, int(num_points))
         y_values = [y0] * len(x_values)
-        return x_values.tolist(), y_values
+        return x_values.tolist(), y_values, None
 
 def separation_of_variables_method(g_x_str, h_y_str, x0, y0, x_end, num_points):
     try:
@@ -171,6 +171,8 @@ def separation_of_variables_method(g_x_str, h_y_str, x0, y0, x_end, num_points):
         h_int = integrate(1/h_expr, y)
         
         C = float(h_int.subs(y, y0)) - float(g_int.subs(x, x0))
+        
+        implicit_solution = f"{h_int} = {g_int} + {C}"
         
         x_values = np.linspace(x0, x_end, int(num_points))
         y_values = []
@@ -185,12 +187,12 @@ def separation_of_variables_method(g_x_str, h_y_str, x0, y0, x_end, num_points):
             except:
                 y_values.append(y_values[-1] if y_values else y0)
         
-        return x_values.tolist(), y_values
+        return x_values.tolist(), y_values, implicit_solution
     except Exception as e:
         print(f"Separation error: {e}")
         x_values = np.linspace(x0, x_end, int(num_points))
         y_values = [y0] * len(x_values)
-        return x_values.tolist(), y_values
+        return x_values.tolist(), y_values, None
 
 def integrating_factor_method(p_x_str, q_x_str, x0, y0, x_end, num_points):
     try:
@@ -209,16 +211,17 @@ def integrating_factor_method(p_x_str, q_x_str, x0, y0, x_end, num_points):
         x_values = np.linspace(x0, x_end, int(num_points))
         y_values = [float(solution_func(xi)) for xi in x_values]
         
-        return x_values.tolist(), y_values
+        return x_values.tolist(), y_values, str(solution)
     except Exception as e:
         print(f"Integrating factor error: {e}")
         x_values = np.linspace(x0, x_end, int(num_points))
         y_values = [y0] * len(x_values)
-        return x_values.tolist(), y_values
+        return x_values.tolist(), y_values, None
 
 def substitution_method(f, sub_expr, x0, y0, x_end, num_points):
     f_lambda = lambda x_val, y_val: f(x_val, y_val) if callable(f) else 0
-    return euler_method(f_lambda, x0, y0, x_end, (x_end - x0) / num_points)
+    x_vals, y_vals = euler_method(f_lambda, x0, y0, x_end, (x_end - x0) / num_points)
+    return x_vals, y_vals, None
 
 METHODS = {
     'euler': {'name': 'Euler Method', 'function': euler_method},
@@ -415,6 +418,8 @@ def simulate():
         method_function = method_info['function']
         method_name = method_info['name']
         
+        analytical_formula = None
+        
         if method_key == 'euler':
             parse_result = parse_equation(equation_str, parameters)
             if not parse_result['success']:
@@ -429,15 +434,15 @@ def simulate():
             parsed_expr = parse_result['expression']
             
         elif method_key == 'direct_integration':
-            x_values, y_values = method_function(equation_str, x0_val, y0_val, x_end_val, eval_points_val)
+            x_values, y_values, analytical_formula = method_function(equation_str, x0_val, y0_val, x_end_val, eval_points_val)
             parsed_expr = equation_str
             
         elif method_key == 'separation':
-            x_values, y_values = method_function(g_x, h_y, x0_val, y0_val, x_end_val, eval_points_val)
+            x_values, y_values, analytical_formula = method_function(g_x, h_y, x0_val, y0_val, x_end_val, eval_points_val)
             parsed_expr = f"g(x)·h(y) = ({g_x})·({h_y})"
             
         elif method_key == 'integrating_factor':
-            x_values, y_values = method_function(p_x, q_x, x0_val, y0_val, x_end_val, eval_points_val)
+            x_values, y_values, analytical_formula = method_function(p_x, q_x, x0_val, y0_val, x_end_val, eval_points_val)
             parsed_expr = f"y' + ({p_x})y = ({q_x})"
             
         elif method_key == 'substitution':
@@ -450,7 +455,7 @@ def simulate():
                 }), 400
             
             f = parse_result['function']
-            x_values, y_values = method_function(f, substitution, x0_val, y0_val, x_end_val, eval_points_val)
+            x_values, y_values, analytical_formula = method_function(f, substitution, x0_val, y0_val, x_end_val, eval_points_val)
             parsed_expr = parse_result['expression']
         
         response = {
@@ -464,7 +469,8 @@ def simulate():
             'method': method_name,
             'results': [{'x': float(x), 'y': float(y)} for x, y in zip(x_values, y_values)],
             'num_points': len(x_values),
-            'message': f'Equation successfully solved using {method_name}'
+            'message': f'Equation successfully solved using {method_name}',
+            'analytical_formula': analytical_formula
         }
         
         if method_key == 'euler':

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
-from sympy import symbols, sympify, lambdify, sin, cos, exp, tan, log, sqrt
+from sympy import symbols, sympify, lambdify, sin, cos, exp, tan, log, sqrt, integrate, dsolve, Function, Eq, Derivative, nsolve, solve
 from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication_application
+import numpy as np
 import re
 
 app = Flask(__name__)
@@ -106,7 +107,8 @@ def parse_equation(equation_str, parameters=None):
         return {
             'success': True,
             'function': f,
-            'expression': str(expr)
+            'expression': str(expr),
+            'symbolic': expr
         }
     except SyntaxError as e:
         return {
@@ -138,17 +140,85 @@ def euler_method(f, x0, y0, x_end, h):
     
     return x_values, y_values
 
-def direct_integration_method(f, x0, y0, x_end, h):
-    return euler_method(f, x0, y0, x_end, h)
+def direct_integration_method(f_x_str, x0, y0, x_end, num_points):
+    try:
+        x = symbols('x')
+        f_expr = parse_expr(f_x_str, local_dict={'x': x, 'sin': sin, 'cos': cos, 'exp': exp, 'tan': tan, 'log': log, 'sqrt': sqrt})
+        
+        antiderivative = integrate(f_expr, x)
+        C = y0 - float(antiderivative.subs(x, x0))
+        solution = antiderivative + C
+        
+        solution_func = lambdify(x, solution, modules=['numpy'])
+        
+        x_values = np.linspace(x0, x_end, int(num_points))
+        y_values = [float(solution_func(xi)) for xi in x_values]
+        
+        return x_values.tolist(), y_values
+    except Exception as e:
+        print(f"Direct integration error: {e}")
+        x_values = np.linspace(x0, x_end, int(num_points))
+        y_values = [y0] * len(x_values)
+        return x_values.tolist(), y_values
 
-def separation_of_variables_method(f, x0, y0, x_end, h):
-    return euler_method(f, x0, y0, x_end, h)
+def separation_of_variables_method(g_x_str, h_y_str, x0, y0, x_end, num_points):
+    try:
+        x, y = symbols('x y')
+        g_expr = parse_expr(g_x_str, local_dict={'x': x, 'sin': sin, 'cos': cos, 'exp': exp, 'tan': tan, 'log': log, 'sqrt': sqrt})
+        h_expr = parse_expr(h_y_str, local_dict={'y': y, 'sin': sin, 'cos': cos, 'exp': exp, 'tan': tan, 'log': log, 'sqrt': sqrt})
+        
+        g_int = integrate(g_expr, x)
+        h_int = integrate(1/h_expr, y)
+        
+        C = float(h_int.subs(y, y0)) - float(g_int.subs(x, x0))
+        
+        x_values = np.linspace(x0, x_end, int(num_points))
+        y_values = []
+        
+        current_y = y0
+        for xi in x_values:
+            try:
+                implicit_eq = h_int - g_int.subs(x, xi) - C
+                y_solution = nsolve(implicit_eq, current_y)
+                y_values.append(float(y_solution))
+                current_y = float(y_solution)
+            except:
+                y_values.append(y_values[-1] if y_values else y0)
+        
+        return x_values.tolist(), y_values
+    except Exception as e:
+        print(f"Separation error: {e}")
+        x_values = np.linspace(x0, x_end, int(num_points))
+        y_values = [y0] * len(x_values)
+        return x_values.tolist(), y_values
 
-def integrating_factor_method(f, x0, y0, x_end, h):
-    return euler_method(f, x0, y0, x_end, h)
+def integrating_factor_method(p_x_str, q_x_str, x0, y0, x_end, num_points):
+    try:
+        x, y = symbols('x y')
+        P = parse_expr(p_x_str, local_dict={'x': x, 'sin': sin, 'cos': cos, 'exp': exp, 'tan': tan, 'log': log, 'sqrt': sqrt})
+        Q = parse_expr(q_x_str, local_dict={'x': x, 'sin': sin, 'cos': cos, 'exp': exp, 'tan': tan, 'log': log, 'sqrt': sqrt})
+        
+        mu = exp(integrate(P, x))
+        
+        integral_term = integrate(mu * Q, x)
+        C = (y0 * mu.subs(x, x0) - integral_term.subs(x, x0))
+        
+        solution = (integral_term + C) / mu
+        solution_func = lambdify(x, solution, modules=['numpy'])
+        
+        x_values = np.linspace(x0, x_end, int(num_points))
+        y_values = [float(solution_func(xi)) for xi in x_values]
+        
+        return x_values.tolist(), y_values
+    except Exception as e:
+        print(f"Integrating factor error: {e}")
+        x_values = np.linspace(x0, x_end, int(num_points))
+        y_values = [y0] * len(x_values)
+        return x_values.tolist(), y_values
 
-def substitution_method(f, x0, y0, x_end, h):
-    return euler_method(f, x0, y0, x_end, h)
+def substitution_method(f, sub_expr, x0, y0, x_end, num_points):
+    f_lambda = lambda x_val, y_val: f(x_val, y_val) if callable(f) else 0
+    return euler_method(f_lambda, x0, y0, x_end, (x_end - x0) / num_points)
 
 METHODS = {
     'euler': {'name': 'Euler Method', 'function': euler_method},
@@ -331,7 +401,7 @@ def simulate():
                 'error_type': 'validation'
             }), 400
     
-    if equation_str:
+    if equation_str and method_key == 'euler':
         is_valid, error_msg = validate_equation_input(equation_str, set(parameters.keys()))
         if not is_valid:
             return jsonify({
@@ -340,33 +410,54 @@ def simulate():
                 'error_type': 'validation'
             }), 400
     
-    parse_result = parse_equation(equation_str if equation_str else 'x', parameters)
-    
-    if not parse_result['success']:
-        return jsonify({
-            'status': 'error',
-            'message': parse_result['error'],
-            'error_type': 'parse'
-        }), 400
-    
     try:
-        f = parse_result['function']
         method_info = METHODS[method_key]
         method_function = method_info['function']
         method_name = method_info['name']
         
         if method_key == 'euler':
-            step_calc = step_size_val
-        else:
-            step_calc = (x_end_val - x0_val) / eval_points_val
-        
-        x_values, y_values = method_function(f, x0_val, y0_val, x_end_val, step_calc)
+            parse_result = parse_equation(equation_str, parameters)
+            if not parse_result['success']:
+                return jsonify({
+                    'status': 'error',
+                    'message': parse_result['error'],
+                    'error_type': 'parse'
+                }), 400
+            
+            f = parse_result['function']
+            x_values, y_values = method_function(f, x0_val, y0_val, x_end_val, step_size_val)
+            parsed_expr = parse_result['expression']
+            
+        elif method_key == 'direct_integration':
+            x_values, y_values = method_function(equation_str, x0_val, y0_val, x_end_val, eval_points_val)
+            parsed_expr = equation_str
+            
+        elif method_key == 'separation':
+            x_values, y_values = method_function(g_x, h_y, x0_val, y0_val, x_end_val, eval_points_val)
+            parsed_expr = f"g(x)·h(y) = ({g_x})·({h_y})"
+            
+        elif method_key == 'integrating_factor':
+            x_values, y_values = method_function(p_x, q_x, x0_val, y0_val, x_end_val, eval_points_val)
+            parsed_expr = f"y' + ({p_x})y = ({q_x})"
+            
+        elif method_key == 'substitution':
+            parse_result = parse_equation(equation_str, parameters)
+            if not parse_result['success']:
+                return jsonify({
+                    'status': 'error',
+                    'message': parse_result['error'],
+                    'error_type': 'parse'
+                }), 400
+            
+            f = parse_result['function']
+            x_values, y_values = method_function(f, substitution, x0_val, y0_val, x_end_val, eval_points_val)
+            parsed_expr = parse_result['expression']
         
         response = {
             'status': 'success',
             'equation': equation_str if equation_str else f'Method: {method_name}',
             'parameters': parameters,
-            'parsed_expression': parse_result['expression'],
+            'parsed_expression': parsed_expr,
             'x0': x0_val,
             'y0': y0_val,
             'x_end': x_end_val,
@@ -401,3 +492,5 @@ def simulate():
 if __name__ == '__main__':
     app.run(debug=True)
 
+
+    

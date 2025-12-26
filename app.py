@@ -238,9 +238,14 @@ def index():
 @app.route('/solver')
 def solver():
     return render_template('solver.html')
+
 @app.route('/quick-solver')
 def quick_solver():
     return render_template('quick-solver.html')
+
+@app.route('/advanced')
+def advanced():
+    return render_template('advanced.html')
 @app.route('/simulate', methods=['POST'])
 def simulate():
     data = request.get_json()

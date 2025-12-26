@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Analysis - ODE VAS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='advanced.css') }}">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="home-btn">← Back to Home</a>
+        
+        <div class="advanced-card">
+            <h1>Advanced ODE Analysis</h1>
+            <p class="subtitle">Parameter variation, stability analysis, and step-size control for in-depth study</p>
+            
+            <form id="advanced-form">
+                <div class="section">
+                    <h2>Differential Equation</h2>
+                    <div class="form-group">
+                        <label for="equation">dy/dx = f(x, y)</label>
+                        <input type="text" id="equation" placeholder="e.g., -2*x*y" required>
+                        <small>Enter the right-hand side of your first-order ODE</small>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Initial Conditions</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="x0">x₀ (Initial X)</label>
+                            <input type="number" id="x0" step="0.1" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="y0">y₀ (Initial Y)</label>
+                            <input type="number" id="y0" step="0.1" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="x_end">x_end (Domain End)</label>
+                            <input type="number" id="x_end" step="0.1" value="10" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Parameter Variation</h2>
+                    <div class="form-group">
+                        <label for="param_name">Parameter Name</label>
+                        <input type="text" id="param_name" placeholder="e.g., k, a, b">
+                        <small>Single letter parameter to vary</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="param_min">Minimum Value</label>
+                            <input type="number" id="param_min" step="0.1" value="0.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="param_max">Maximum Value</label>
+                            <input type="number" id="param_max" step="0.1" value="2.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="param_steps">Steps</label>
+                            <input type="number" id="param_steps" value="5" min="2" max="10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Step-Size Comparison</h2>
+                    <div class="form-group">
+                        <label for="step_sizes">Step Sizes (comma-separated)</label>
+                        <input type="text" id="step_sizes" placeholder="e.g., 0.1, 0.05, 0.01" value="0.1, 0.05, 0.01">
+                        <small>Compare solution accuracy with different step sizes</small>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Stability Analysis</h2>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="show_stability">
+                            Analyze equilibrium points and stability
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="show_phase_portrait">
+                            Generate phase portrait
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Numerical Method</h2>
+                    <div class="form-group">
+                        <label for="method">Primary Method</label>
+                        <select id="method" required>
+                            <option value="euler">Euler Method</option>
+                            <option value="improved_euler">Improved Euler Method</option>
+                            <option value="rk4" selected>Runge-Kutta (RK4)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="analyze-btn">Run Advanced Analysis</button>
+            </form>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h2>Analysis Results</h2>
+                
+                <div class="result-card">
+                    <h3>Parameter Variation</h3>
+                    <div class="visualization-placeholder">
+                        <p>Solution curves for different parameter values will appear here</p>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Step-Size Comparison</h3>
+                    <div class="visualization-placeholder">
+                        <p>Accuracy comparison for different step sizes will appear here</p>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Stability Analysis</h3>
+                    <div class="visualization-placeholder">
+                        <p>Equilibrium points and phase portrait will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('advanced-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const resultsSection = document.getElementById('results');
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+            
+            console.log('Advanced analysis form submitted');
+        });
+    </script>
+</body>
+</html>

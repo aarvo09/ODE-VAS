@@ -150,6 +150,42 @@
                         Move the slider to explore how different initial conditions affect the solution
                     </small>
                 </div>
+                
+                <div id="stats-panel" style="display: none; margin-top: 20px; padding: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                             Solution Statistics
+                        </h4>
+                        <button id="export-csv-btn" 
+                                style="background: white; color: #667eea; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.05)'" 
+                                onmouseout="this.style.transform='scale(1)'">
+                            📥 Export CSV
+                        </button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                            <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Maximum Y</div>
+                            <div style="font-weight: 700; font-size: 18px;" id="stat-max-y">-</div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span id="stat-max-x">-</span></div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                            <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Minimum Y</div>
+                            <div style="font-weight: 700; font-size: 18px;" id="stat-min-y">-</div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span id="stat-min-x">-</span></div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                            <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Final Point</div>
+                            <div style="font-weight: 700; font-size: 18px;" id="stat-final-y">-</div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span id="stat-final-x">-</span></div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                            <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Total Points</div>
+                            <div style="font-weight: 700; font-size: 18px;" id="stat-points">-</div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">Y Change: <span id="stat-change">-</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="visualization-placeholder">
@@ -163,6 +199,67 @@
 
     <script>
         let chartInstance = null;
+        let currentResults = null;
+        
+        function calculateStatistics(results) {
+            if (!results || results.length === 0) return;
+            
+            currentResults = results;
+            const yValues = results.map(r => r.y);
+            const xValues = results.map(r => r.x);
+            
+            const maxY = Math.max(...yValues);
+            const minY = Math.min(...yValues);
+            const maxIndex = yValues.indexOf(maxY);
+            const minIndex = yValues.indexOf(minY);
+            
+            const finalPoint = results[results.length - 1];
+            const initialY = results[0].y;
+            const totalChange = finalPoint.y - initialY;
+            
+            document.getElementById('stat-max-y').textContent = maxY.toFixed(4);
+            document.getElementById('stat-max-x').textContent = xValues[maxIndex].toFixed(4);
+            document.getElementById('stat-min-y').textContent = minY.toFixed(4);
+            document.getElementById('stat-min-x').textContent = xValues[minIndex].toFixed(4);
+            document.getElementById('stat-final-y').textContent = finalPoint.y.toFixed(4);
+            document.getElementById('stat-final-x').textContent = finalPoint.x.toFixed(4);
+            document.getElementById('stat-points').textContent = results.length;
+            document.getElementById('stat-change').textContent = (totalChange >= 0 ? '+' : '') + totalChange.toFixed(4);
+            
+            document.getElementById('stats-panel').style.display = 'block';
+        }
+        
+        function exportToCSV() {
+            if (!currentResults || currentResults.length === 0) {
+                alert('No solution data to export');
+                return;
+            }
+            
+            let csvContent = 'x,y\n';
+            currentResults.forEach(point => {
+                csvContent += `${point.x},${point.y}\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `ode_solution_${timestamp}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const exportBtn = document.getElementById('export-csv-btn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', exportToCSV);
+            }
+        });
         
         function plotSolution(results, method, equation) {
             const graphContainer = document.getElementById('graph-container');
@@ -512,6 +609,7 @@
             .then(data => {
                 if (data.status === 'success' && data.results && data.results.length > 0) {
                     plotSolution(data.results, data.method, data.equation);
+                    calculateStatistics(data.results);
                 }
             })
             .catch(error => console.error('Slider update error:', error));
@@ -629,6 +727,7 @@
                     
                     if (data.results && data.results.length > 0) {
                         plotSolution(data.results, data.method, data.equation);
+                        calculateStatistics(data.results);
                         enableY0Slider(data.y0);
                     }
                 } else {
@@ -662,4 +761,5 @@
     </script>
 </body>
 </html>
+
 

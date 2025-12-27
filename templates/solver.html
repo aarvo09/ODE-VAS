@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Visualizer - ODE VAS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='visualizer.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -125,6 +126,11 @@
             
             <div id="result" class="result-area" style="display: none;"></div>
             
+            <div id="graph-container" style="display: none; margin-top: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Solution Graph</h3>
+                <canvas id="solutionChart"></canvas>
+            </div>
+            
             <div class="visualization-placeholder">
                 <div class="placeholder-icon">📊</div>
                 <h3>Interactive Graph</h3>
@@ -135,6 +141,102 @@
     </div>
 
     <script>
+        let chartInstance = null;
+        
+        function plotSolution(results, method, equation) {
+            const graphContainer = document.getElementById('graph-container');
+            const placeholder = document.querySelector('.visualization-placeholder');
+            
+            graphContainer.style.display = 'block';
+            placeholder.style.display = 'none';
+            
+            const xValues = results.map(point => point.x);
+            const yValues = results.map(point => point.y);
+        
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('solutionChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        label: `y(x) - ${method}`,
+                        data: yValues,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 1.5,
+                        pointHoverRadius: 5,
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: `dy/dx = ${equation}`,
+                            font: {
+                                size: 14
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `y = ${context.parsed.y.toFixed(4)}`;
+                                },
+                                title: function(context) {
+                                    return `x = ${context[0].parsed.x.toFixed(4)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'x',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+        
         const methodDescriptions = {
             'euler': 'Numerical method - requires f(x,y) and step size',
             'direct_integration': 'For y\' = f(x) - function of x only',
@@ -299,6 +401,10 @@
                     `;
                     resultDiv.className = 'result-area success';
                     resultDiv.innerHTML = html;
+                    
+                    if (data.results && data.results.length > 0) {
+                        plotSolution(data.results, data.method, data.equation);
+                    }
                 } else {
                     const errorType = data.error_type || 'unknown';
                     let errorIcon = '✗';
@@ -336,4 +442,3 @@
     </script>
 </body>
 </html>
-fawfwwweffdfwfwwfkfsjdfa;n;aka

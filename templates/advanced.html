@@ -36,9 +36,25 @@
                 <div class="section">
                     <h2>Differential Equation</h2>
                     <div class="form-group">
-                        <label for="equation">dy/dx = f(x, y)</label>
+                        <label for="equation-examples">📚 Example Equations</label>
+                        <select id="equation-examples" class="example-selector">
+                            <option value="">-- Select an Example --</option>
+                            <option value="-2*x*y">Exponential Decay: -2*x*y</option>
+                            <option value="y*(1-y)">Logistic Growth: y*(1-y)</option>
+                            <option value="-x/y">Harmonic Oscillator: -x/y</option>
+                            <option value="x**2 - y">Polynomial: x**2 - y</option>
+                            <option value="sin(x)*y">Trigonometric: sin(x)*y</option>
+                            <option value="exp(-x)*y">Exponential Function: exp(-x)*y</option>
+                            <option value="y**2 - x**2">Quadratic: y**2 - x**2</option>
+                            <option value="1/(1 + y**2)">Rational: 1/(1 + y**2)</option>
+                        </select>
+                        <small class="example-hint">Choose a pre-built example to auto-fill the equation</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="equation">dy/dx = f(x, y) *</label>
                         <input type="text" id="equation" placeholder="e.g., -2*x*y" required>
-                        <small>Enter the right-hand side of your first-order ODE</small>
+                        <small class="input-hint">Enter the right-hand side of your first-order ODE</small>
+                        <span class="validation-message" id="equation-error"></span>
                     </div>
                 </div>
 
@@ -46,49 +62,60 @@
                     <h2>Initial Conditions</h2>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="x0">x₀ (Initial X)</label>
-                            <input type="number" id="x0" step="0.1" value="0" required>
+                            <label for="x0">x₀ (Initial X) *</label>
+                            <input type="number" id="x0" step="0.1" value="0" required oninput="validateInitialConditions()">
+                            <span class="validation-message" id="x0-error"></span>
                         </div>
                         <div class="form-group">
-                            <label for="y0">y₀ (Initial Y)</label>
-                            <input type="number" id="y0" step="0.1" value="1" required>
+                            <label for="y0">y₀ (Initial Y) *</label>
+                            <input type="number" id="y0" step="0.1" value="1" required oninput="validateInitialConditions()">
+                            <span class="validation-message" id="y0-error"></span>
                         </div>
                         <div class="form-group">
-                            <label for="x_end">x_end (Domain End)</label>
-                            <input type="number" id="x_end" step="0.1" value="10" required>
+                            <label for="x_end">x_end (Domain End) *</label>
+                            <input type="number" id="x_end" step="0.1" value="10" required oninput="validateInitialConditions()">
+                            <span class="validation-message" id="xend-error"></span>
                         </div>
                     </div>
+                    <div class="validation-summary" id="initial-conditions-summary"></div>
                 </div>
 
                 <div class="section">
                     <h2>Parameter Variation</h2>
                     <div class="form-group">
                         <label for="param_name">Parameter Name</label>
-                        <input type="text" id="param_name" placeholder="e.g., k, a, b">
+                        <input type="text" id="param_name" placeholder="e.g., k, a, b" oninput="validateParameterName()">
                         <small>Single letter parameter to vary</small>
+                        <span class="validation-message" id="param-name-error"></span>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="param_min">Minimum Value</label>
-                            <input type="number" id="param_min" step="0.1" value="0.5">
+                            <input type="number" id="param_min" step="0.1" value="0.5" oninput="validateParameterRange()">
+                            <span class="validation-message" id="param-min-error"></span>
                         </div>
                         <div class="form-group">
                             <label for="param_max">Maximum Value</label>
-                            <input type="number" id="param_max" step="0.1" value="2.0">
+                            <input type="number" id="param_max" step="0.1" value="2.0" oninput="validateParameterRange()">
+                            <span class="validation-message" id="param-max-error"></span>
                         </div>
                         <div class="form-group">
                             <label for="param_steps">Steps</label>
-                            <input type="number" id="param_steps" value="5" min="2" max="10">
+                            <input type="number" id="param_steps" value="5" min="2" max="10" oninput="validateParameterSteps()">
+                            <span class="validation-message" id="param-steps-error"></span>
                         </div>
                     </div>
+                    <div class="validation-summary" id="parameter-summary"></div>
                 </div>
 
                 <div class="section">
                     <h2>Step-Size Comparison</h2>
                     <div class="form-group">
                         <label for="step_sizes">Step Sizes (comma-separated)</label>
-                        <input type="text" id="step_sizes" placeholder="e.g., 0.1, 0.05, 0.01" value="0.1, 0.05, 0.01">
+                        <input type="text" id="step_sizes" placeholder="e.g., 0.1, 0.05, 0.01" value="0.1, 0.05, 0.01" oninput="validateStepSizes()">
                         <small>Compare solution accuracy with different step sizes</small>
+                        <span class="validation-message" id="step-sizes-error"></span>
+                        <div class="step-size-preview" id="step-sizes-preview"></div>
                     </div>
                 </div>
 
@@ -292,6 +319,191 @@
                 }
             }
         });
+
+        document.getElementById('equation-examples').addEventListener('change', function() {
+            const selectedExample = this.value;
+            if (selectedExample) {
+                document.getElementById('equation').value = selectedExample;
+                document.getElementById('equation').classList.add('auto-filled');
+                showToast('Example equation loaded', 'success');
+                
+                setTimeout(() => {
+                    document.getElementById('equation').classList.remove('auto-filled');
+                }, 1000);
+            }
+        });
+
+        function validateInitialConditions() {
+            const x0 = parseFloat(document.getElementById('x0').value);
+            const xEnd = parseFloat(document.getElementById('x_end').value);
+            const x0Input = document.getElementById('x0');
+            const xEndInput = document.getElementById('x_end');
+            const xEndError = document.getElementById('xend-error');
+            const summary = document.getElementById('initial-conditions-summary');
+            
+            let isValid = true;
+            
+            if (isNaN(xEnd) || xEnd <= x0) {
+                xEndInput.classList.add('invalid');
+                xEndInput.classList.remove('valid');
+                xEndError.textContent = '⚠ x_end must be greater than x₀';
+                isValid = false;
+            } else {
+                xEndInput.classList.add('valid');
+                xEndInput.classList.remove('invalid');
+                xEndError.textContent = '';
+            }
+            
+            if (!isNaN(x0)) {
+                x0Input.classList.add('valid');
+                x0Input.classList.remove('invalid');
+            }
+            
+            if (isValid && !isNaN(x0) && !isNaN(xEnd)) {
+                const range = (xEnd - x0).toFixed(2);
+                summary.innerHTML = `✓ Valid range: [${x0}, ${xEnd}] (span: ${range})`;
+                summary.className = 'validation-summary success';
+            } else {
+                summary.innerHTML = '';
+            }
+            
+            return isValid;
+        }
+
+        function validateParameterName() {
+            const paramName = document.getElementById('param_name').value;
+            const paramInput = document.getElementById('param_name');
+            const error = document.getElementById('param-name-error');
+            
+            if (paramName.length === 0) {
+                paramInput.classList.remove('valid', 'invalid');
+                error.textContent = '';
+                return true;
+            }
+            
+            const validPattern = /^[a-zA-Z]$/;
+            if (!validPattern.test(paramName)) {
+                paramInput.classList.add('invalid');
+                paramInput.classList.remove('valid');
+                error.textContent = '⚠ Must be a single letter (a-z, A-Z)';
+                return false;
+            } else {
+                paramInput.classList.add('valid');
+                paramInput.classList.remove('invalid');
+                error.textContent = '';
+                return true;
+            }
+        }
+
+        function validateParameterRange() {
+            const paramMin = parseFloat(document.getElementById('param_min').value);
+            const paramMax = parseFloat(document.getElementById('param_max').value);
+            const minInput = document.getElementById('param_min');
+            const maxInput = document.getElementById('param_max');
+            const minError = document.getElementById('param-min-error');
+            const maxError = document.getElementById('param-max-error');
+            const summary = document.getElementById('parameter-summary');
+            
+            let isValid = true;
+            
+            if (isNaN(paramMin)) {
+                minInput.classList.add('invalid');
+                minInput.classList.remove('valid');
+                minError.textContent = '⚠ Invalid number';
+                isValid = false;
+            } else {
+                minInput.classList.add('valid');
+                minInput.classList.remove('invalid');
+                minError.textContent = '';
+            }
+            
+            if (isNaN(paramMax)) {
+                maxInput.classList.add('invalid');
+                maxInput.classList.remove('valid');
+                maxError.textContent = '⚠ Invalid number';
+                isValid = false;
+            } else if (paramMax <= paramMin) {
+                maxInput.classList.add('invalid');
+                maxInput.classList.remove('valid');
+                maxError.textContent = '⚠ Must be greater than minimum';
+                isValid = false;
+            } else {
+                maxInput.classList.add('valid');
+                maxInput.classList.remove('invalid');
+                maxError.textContent = '';
+            }
+            
+            if (isValid && !isNaN(paramMin) && !isNaN(paramMax)) {
+                summary.innerHTML = `✓ Parameter will vary from ${paramMin} to ${paramMax}`;
+                summary.className = 'validation-summary success';
+            } else {
+                summary.innerHTML = '';
+            }
+            
+            return isValid;
+        }
+
+        function validateParameterSteps() {
+            const steps = parseInt(document.getElementById('param_steps').value);
+            const stepsInput = document.getElementById('param_steps');
+            const error = document.getElementById('param-steps-error');
+            
+            if (isNaN(steps) || steps < 2 || steps > 10) {
+                stepsInput.classList.add('invalid');
+                stepsInput.classList.remove('valid');
+                error.textContent = '⚠ Must be between 2 and 10';
+                return false;
+            } else {
+                stepsInput.classList.add('valid');
+                stepsInput.classList.remove('invalid');
+                error.textContent = '';
+                return true;
+            }
+        }
+
+        function validateStepSizes() {
+            const stepSizesStr = document.getElementById('step_sizes').value;
+            const input = document.getElementById('step_sizes');
+            const error = document.getElementById('step-sizes-error');
+            const preview = document.getElementById('step-sizes-preview');
+            
+            if (!stepSizesStr.trim()) {
+                input.classList.remove('valid', 'invalid');
+                error.textContent = '';
+                preview.innerHTML = '';
+                return true;
+            }
+            
+            const values = stepSizesStr.split(',').map(s => s.trim());
+            const numbers = values.map(v => parseFloat(v));
+            
+            const hasInvalid = numbers.some(n => isNaN(n) || n <= 0);
+            
+            if (hasInvalid) {
+                input.classList.add('invalid');
+                input.classList.remove('valid');
+                error.textContent = '⚠ All values must be positive numbers';
+                preview.innerHTML = '';
+                return false;
+            } else {
+                input.classList.add('valid');
+                input.classList.remove('invalid');
+                error.textContent = '';
+                
+                const sortedNumbers = [...numbers].sort((a, b) => b - a);
+                preview.innerHTML = `✓ ${numbers.length} step size(s): ${sortedNumbers.join(', ')}`;
+                preview.className = 'step-size-preview success';
+                
+                return true;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            validateInitialConditions();
+            validateStepSizes();
+        });
     </script>
 </body>
 </html>
+
+

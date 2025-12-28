@@ -7,6 +7,24 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='advanced.css') }}">
 </head>
 <body>
+    <div id="toast-container"></div>
+    
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Clear Form</h3>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to clear all form fields?</p>
+                <p class="modal-warning">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel-btn" id="cancel-clear">Cancel</button>
+                <button class="modal-btn confirm-btn" id="confirm-clear">Clear Form</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <a href="/" class="home-btn">← Back to Home</a>
         
@@ -102,7 +120,11 @@
                     </div>
                 </div>
 
-                <button type="submit" class="analyze-btn">Run Advanced Analysis</button>
+                <div class="button-group">
+                    <button type="submit" class="analyze-btn">Run Advanced Analysis</button>
+                    <button type="button" class="clear-btn" id="clear-form-btn">Clear Form</button>
+                    <button type="button" class="restore-btn" id="restore-form-btn" style="display: none;">↺ Restore Last</button>
+                </div>
             </form>
 
             <div id="results" class="results-section" style="display: none;">
@@ -133,14 +155,142 @@
     </div>
 
     <script>
+        let formState = null;
+        let lastSavedState = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            
+            const container = document.getElementById('toast-container');
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function saveFormState() {
+            const form = document.getElementById('advanced-form');
+            const formData = new FormData(form);
+            const state = {};
+            
+            for (let [key, value] of formData.entries()) {
+                state[key] = value;
+            }
+            
+            state.equation = document.getElementById('equation').value;
+            state.x0 = document.getElementById('x0').value;
+            state.y0 = document.getElementById('y0').value;
+            state.x_end = document.getElementById('x_end').value;
+            state.param_name = document.getElementById('param_name').value;
+            state.param_min = document.getElementById('param_min').value;
+            state.param_max = document.getElementById('param_max').value;
+            state.param_steps = document.getElementById('param_steps').value;
+            state.step_sizes = document.getElementById('step_sizes').value;
+            state.show_stability = document.getElementById('show_stability').checked;
+            state.show_phase_portrait = document.getElementById('show_phase_portrait').checked;
+            state.method = document.getElementById('method').value;
+            
+            return state;
+        }
+
+        function restoreFormState(state) {
+            if (!state) return;
+            
+            document.getElementById('equation').value = state.equation || '';
+            document.getElementById('x0').value = state.x0 || '0';
+            document.getElementById('y0').value = state.y0 || '1';
+            document.getElementById('x_end').value = state.x_end || '10';
+            document.getElementById('param_name').value = state.param_name || '';
+            document.getElementById('param_min').value = state.param_min || '0.5';
+            document.getElementById('param_max').value = state.param_max || '2.0';
+            document.getElementById('param_steps').value = state.param_steps || '5';
+            document.getElementById('step_sizes').value = state.step_sizes || '0.1, 0.05, 0.01';
+            document.getElementById('show_stability').checked = state.show_stability || false;
+            document.getElementById('show_phase_portrait').checked = state.show_phase_portrait || false;
+            document.getElementById('method').value = state.method || 'rk4';
+        }
+
+        function showModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('show');
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('show');
+        }
+
         document.getElementById('advanced-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            lastSavedState = saveFormState();
             
             const resultsSection = document.getElementById('results');
             resultsSection.style.display = 'block';
             resultsSection.scrollIntoView({ behavior: 'smooth' });
             
+            showToast('Analysis started successfully!', 'success');
             console.log('Advanced analysis form submitted');
+        });
+
+        document.getElementById('clear-form-btn').addEventListener('click', function() {
+            formState = saveFormState();
+            showModal();
+        });
+
+        document.getElementById('confirm-clear').addEventListener('click', function() {
+            const form = document.getElementById('advanced-form');
+            form.reset();
+            
+            const resultsSection = document.getElementById('results');
+            resultsSection.style.display = 'none';
+            
+            hideModal();
+            
+            const restoreBtn = document.getElementById('restore-form-btn');
+            restoreBtn.style.display = 'inline-block';
+            
+            showToast('Form cleared successfully', 'info');
+        });
+
+        document.getElementById('cancel-clear').addEventListener('click', function() {
+            hideModal();
+            formState = null;
+            showToast('Action cancelled', 'warning');
+        });
+
+        document.getElementById('restore-form-btn').addEventListener('click', function() {
+            if (formState) {
+                restoreFormState(formState);
+                showToast('Form restored successfully', 'success');
+                
+                const restoreBtn = document.getElementById('restore-form-btn');
+                restoreBtn.style.display = 'none';
+                formState = null;
+            }
+        });
+
+        document.getElementById('confirm-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideModal();
+                showToast('Action cancelled', 'warning');
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('confirm-modal');
+                if (modal.classList.contains('show')) {
+                    hideModal();
+                    showToast('Action cancelled', 'warning');
+                }
+            }
         });
     </script>
 </body>

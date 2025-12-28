@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,16 +8,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='visualizer.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
-    
+
     <div class="container">
         <a href="/" class="home-btn">← Back to Home</a>
-        
+
         <div class="solver-card">
             <h1>Interactive ODE Visualizer</h1>
             <p class="subtitle">Solve and visualize differential equations in real-time</p>
-            
+
             <form id="visualizer-form">
                 <div class="form-group">
                     <label for="method">Solving Method</label>
@@ -29,13 +31,13 @@
                     </select>
                     <small id="method-desc">Numerical method for solving ODEs</small>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="parameters">Parameters (optional)</label>
                     <input type="text" id="parameters" placeholder="e.g., k=0.5, a=2">
                     <small>Format: name=value, separated by commas</small>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="x0">x₀ (Initial X)</label>
@@ -46,105 +48,118 @@
                         <input type="number" id="y0" step="0.1" value="1" required>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="x_end">Domain End (x_end)</label>
                     <input type="number" id="x_end" step="0.1" value="10" required>
                     <small>Final value of x where solution stops</small>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="eval_points">Number of Evaluation Points</label>
                     <input type="number" id="eval_points" step="1" value="100" min="10" required>
                     <small>How many coordinates to generate</small>
                 </div>
-                
+
                 <div class="euler-inputs">
                     <div class="form-group">
                         <label for="equation_euler">f(x, y) - Full Derivative Expression</label>
-                        <input type="text" id="equation_euler" placeholder="e.g., x + y, y**2 - x" required>
+                        <input type="text" id="equation_euler" placeholder="e.g., x + y, y**2 - x">
                         <small>Supports: x, y, +, -, *, /, **, sin, cos, exp, tan, log, sqrt</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="step_size">Step Size (h)</label>
-                        <input type="number" id="step_size" step="0.01" value="0.1" min="0.001" required>
+                        <input type="number" id="step_size" step="0.01" value="0.1" min="0.001">
                         <small>Decimal value for calculation jumps</small>
                     </div>
                 </div>
-                
+
                 <div class="direct-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="equation_direct">f(x) - Function of x only</label>
-                        <input type="text" id="equation_direct" placeholder="e.g., x**2 + 5, sin(x)">
+                        <input type="text" id="equation_direct" placeholder="e.g., x**2 + 5, sin(x)" value="cos(x) * x">
                         <small>Since y' = f(x), input should only contain x</small>
                     </div>
                 </div>
-                
+
                 <div class="separation-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="g_x">g(x) - Function of x</label>
-                        <input type="text" id="g_x" placeholder="e.g., x**2, cos(x)">
+                        <input type="text" id="g_x" placeholder="e.g., x**2, cos(x)" value="x">
                         <small>For y' = g(x) · h(y)</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="h_y">h(y) - Function of y</label>
-                        <input type="text" id="h_y" placeholder="e.g., y, y**2">
+                        <input type="text" id="h_y" placeholder="e.g., y, y**2" value="y">
                         <small>For y' = g(x) · h(y)</small>
                     </div>
                 </div>
-                
+
                 <div class="integrating-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="p_x">P(x) - Coefficient Function</label>
-                        <input type="text" id="p_x" placeholder="e.g., 2*x, 1/x">
+                        <input type="text" id="p_x" placeholder="e.g., 2*x, 1/x" value="1">
                         <small>For y' + P(x)y = Q(x)</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="q_x">Q(x) - Right-hand Side Function</label>
-                        <input type="text" id="q_x" placeholder="e.g., x**2, sin(x)">
+                        <input type="text" id="q_x" placeholder="e.g., x**2, sin(x)" value="x">
                         <small>For y' + P(x)y = Q(x)</small>
                     </div>
                 </div>
-                
+
                 <div class="substitution-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="equation_sub">f(x, y) - Original ODE</label>
-                        <input type="text" id="equation_sub" placeholder="e.g., (y - x)/(y + x)">
+                        <input type="text" id="equation_sub" placeholder="e.g., (y - x)/(y + x)" value="(y-x)/(y+x)">
                         <small>The original derivative expression</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="substitution_var">Substitution Variable (u)</label>
-                        <input type="text" id="substitution_var" placeholder="e.g., y/x, a*x + b*y + c">
+                        <input type="text" id="substitution_var" placeholder="e.g., y/x, a*x + b*y + c" value="y/x">
                         <small>The substitution rule to use</small>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="solve-btn">🎨 Visualize</button>
             </form>
-            
+
             <div id="result" class="result-area" style="display: none;"></div>
-            
-            <div id="graph-container" style="display: none; margin-top: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h3 style="margin-bottom: 15px; color: #2c3e50;">Solution Graph</h3>
+
+            <div id="graph-container"
+                style="display: none; margin-top: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #2c3e50;">Solution Graph</h3>
+                    <button id="slope-field-btn" onclick="toggleSlopeFieldPanel()"
+                        style="display: none; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(255,107,107,0.3);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255,107,107,0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255,107,107,0.3)'">
+                        📐 Slope Field Visualizer
+                    </button>
+                </div>
                 <canvas id="solutionChart"></canvas>
-                
-                <div id="y0-slider-container" style="display: none; margin-top: 25px; padding: 20px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #3498db;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+
+                <div id="y0-slider-container"
+                    style="display: none; margin-top: 25px; padding: 20px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #3498db;">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                         <label style="font-weight: 600; color: #2c3e50; font-size: 15px;">
                             🎚️ Adjust y₀ (Initial Condition)
                         </label>
-                        <span style="background: #3498db; color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 14px;">
+                        <span
+                            style="background: #3498db; color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 14px;">
                             y₀ = <span id="y0-value">1.000</span>
                         </span>
                     </div>
-                    <input type="range" id="y0-slider" 
-                           style="width: 100%; height: 8px; border-radius: 5px; background: #ddd; outline: none; cursor: pointer;"
-                           oninput="updateSolutionWithNewY0(this.value)">
-                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                    <input type="range" id="y0-slider"
+                        style="width: 100%; height: 8px; border-radius: 5px; background: #ddd; outline: none; cursor: pointer;"
+                        oninput="updateSolutionWithNewY0(this.value)">
+                    <div
+                        style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #7f8c8d;">
                         <span>Min: <strong id="y0-min">-5</strong></span>
                         <span>Max: <strong id="y0-max">5</strong></span>
                     </div>
@@ -152,19 +167,23 @@
                         Move the slider to explore how different initial conditions affect the solution
                     </small>
                 </div>
-                      <div id="xend-slider-container" style="display: none; margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #2c3e50;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <div id="xend-slider-container"
+                    style="display: none; margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #2c3e50;">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                         <label style="font-weight: 600; color: #2c3e50; font-size: 15px;">
                             🎚️ Adjust x_end (Domain Range)
                         </label>
-                        <span style="background: #2c3e50; color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 14px;">
+                        <span
+                            style="background: #2c3e50; color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 14px;">
                             x_end = <span id="xend-value">10.000</span>
                         </span>
                     </div>
-                    <input type="range" id="xend-slider" 
-                           style="width: 100%; height: 8px; border-radius: 5px; background: #ddd; outline: none; cursor: pointer;"
-                           oninput="updateSolutionWithNewXEnd(this.value)">
-                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                    <input type="range" id="xend-slider"
+                        style="width: 100%; height: 8px; border-radius: 5px; background: #ddd; outline: none; cursor: pointer;"
+                        oninput="updateSolutionWithNewXEnd(this.value)">
+                    <div
+                        style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #7f8c8d;">
                         <span>Min: <strong id="xend-min">5</strong></span>
                         <span>Max: <strong id="xend-max">20</strong></span>
                     </div>
@@ -173,58 +192,131 @@
                     </small>
                 </div>
 
-                
-                <div id="stats-panel" style="display: none; margin-top: 20px; padding: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div id="slope-field-controls"
+                    style="display: none; margin-top: 20px; padding: 18px; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); border-radius: 8px; color: white;">
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                            📐 Direction Field (Slope Field)
+                        </h4>
+                        <label
+                            style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="slope-field-toggle" onchange="toggleSlopeField()"
+                                style="width: 20px; height: 20px; cursor: pointer;">
+                            <span style="font-size: 14px; font-weight: 500;">Show Direction Field</span>
+                        </label>
+                        <small style="display: block; margin-top: 8px; opacity: 0.9; line-height: 1.4;">
+                            Visualize the derivative dy/dx as small line segments showing the slope at each point
+                        </small>
+                    </div>
+
+                    <div id="slope-field-settings"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div style="background: rgba(255,255,255,0.15); padding: 14px; border-radius: 6px;">
+                            <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600;">
+                                Density: <span id="slope-density-value">20</span>
+                            </label>
+                            <input type="range" id="slope-density-slider" min="10" max="40" value="20" step="5"
+                                oninput="updateSlopeFieldDensity(this.value); document.getElementById('slope-density-value').textContent = this.value;"
+                                style="width: 100%; cursor: pointer;">
+                            <small style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.8;">
+                                Arrows per axis
+                            </small>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.15); padding: 14px; border-radius: 6px;">
+                            <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600;">
+                                Opacity: <span id="slope-opacity-value">0.6</span>
+                            </label>
+                            <input type="range" id="slope-opacity-slider" min="0.1" max="1" value="0.6" step="0.1"
+                                oninput="updateSlopeFieldOpacity(this.value); document.getElementById('slope-opacity-value').textContent = this.value;"
+                                style="width: 100%; cursor: pointer;">
+                            <small style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.8;">
+                                Transparency level
+                            </small>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.15); padding: 14px; border-radius: 6px;">
+                            <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600;">
+                                Arrow Color
+                            </label>
+                            <input type="color" id="slope-color-picker" value="#FF6B6B"
+                                oninput="updateSlopeFieldColor(this.value)"
+                                style="width: 100%; height: 36px; cursor: pointer; border: 2px solid rgba(255,255,255,0.3); border-radius: 4px;">
+                            <small style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.8;">
+                                Click to customize
+                            </small>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.15); padding: 14px; border-radius: 6px;">
+                            <div style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">💡 Tip</div>
+                            <small style="display: block; font-size: 11px; opacity: 0.9; line-height: 1.3;">
+                                The arrows show the direction and steepness of the solution at each point
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stats-panel"
+                    style="display: none; margin-top: 20px; padding: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h4 style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
                             📈 Solution Statistics
                         </h4>
                         <div style="display: flex; gap: 8px;">
-                            <button id="copy-data-btn" 
-                                    style="background: white; color: #667eea; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.05)'" 
-                                    onmouseout="this.style.transform='scale(1)'">
+                            <button id="copy-data-btn"
+                                style="background: white; color: #667eea; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1)'">
                                 📋 Copy
                             </button>
-                            <button id="download-graph-btn" 
-                                    style="background: white; color: #667eea; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.05)'" 
-                                    onmouseout="this.style.transform='scale(1)'">
+                            <button id="download-graph-btn"
+                                style="background: white; color: #667eea; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1)'">
                                 🖼️ PNG
                             </button>
-                            <button id="export-csv-btn" 
-                                    style="background: white; color: #667eea; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.05)'" 
-                                    onmouseout="this.style.transform='scale(1)'">
+                            <button id="export-csv-btn"
+                                style="background: white; color: #667eea; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1)'">
                                 💾 CSV
                             </button>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                        <div
+                            style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
                             <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Maximum Y</div>
                             <div style="font-weight: 700; font-size: 18px;" id="stat-max-y">-</div>
-                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span id="stat-max-x">-</span></div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span
+                                    id="stat-max-x">-</span></div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                        <div
+                            style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
                             <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Minimum Y</div>
                             <div style="font-weight: 700; font-size: 18px;" id="stat-min-y">-</div>
-                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span id="stat-min-x">-</span></div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span
+                                    id="stat-min-x">-</span></div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                        <div
+                            style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
                             <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Final Point</div>
                             <div style="font-weight: 700; font-size: 18px;" id="stat-final-y">-</div>
-                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span id="stat-final-x">-</span></div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">at x = <span
+                                    id="stat-final-x">-</span></div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
+                        <div
+                            style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; backdrop-filter: blur(10px);">
                             <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Total Points</div>
                             <div style="font-weight: 700; font-size: 18px;" id="stat-points">-</div>
-                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">Y Change: <span id="stat-change">-</span></div>
+                            <div style="font-size: 10px; opacity: 0.8; margin-top: 2px;">Y Change: <span
+                                    id="stat-change">-</span></div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="visualization-placeholder">
                 <div class="placeholder-icon">📊</div>
                 <h3>Interactive Graph</h3>
@@ -237,7 +329,7 @@
     <script>
         let chartInstance = null;
         let currentResults = null;
-        
+
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             const bgColors = {
@@ -245,7 +337,7 @@
                 error: '#ef4444',
                 info: '#3b82f6'
             };
-            
+
             toast.style.cssText = `
                 background: ${bgColors[type] || bgColors.success};
                 color: white;
@@ -259,65 +351,65 @@
                 max-width: 300px;
             `;
             toast.textContent = message;
-            
+
             const container = document.getElementById('toast-container');
             container.appendChild(toast);
-            
+
             setTimeout(() => {
                 toast.style.animation = 'slideOut 0.3s ease-in';
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
-        
+
         function copyDataToClipboard() {
             if (!currentResults || currentResults.length === 0) {
                 showToast('No data to copy', 'error');
                 return;
             }
-            
+
             let text = 'x\ty\n';
             currentResults.forEach(point => {
                 text += `${point.x}\t${point.y}\n`;
             });
-            
+
             navigator.clipboard.writeText(text).then(() => {
                 showToast('✓ Data copied to clipboard!', 'success');
             }).catch(() => {
                 showToast('Failed to copy data', 'error');
             });
         }
-        
+
         function downloadGraphAsPNG() {
             if (!chartInstance) {
                 showToast('No graph to download', 'error');
                 return;
             }
-            
+
             const link = document.createElement('a');
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             link.download = `ode_graph_${timestamp}.png`;
             link.href = chartInstance.toBase64Image();
             link.click();
-            
+
             showToast('✓ Graph downloaded!', 'success');
         }
-        
+
         function calculateStatistics(results) {
             if (!results || results.length === 0) return;
-            
+
             currentResults = results;
             const yValues = results.map(r => r.y);
             const xValues = results.map(r => r.x);
-            
+
             const maxY = Math.max(...yValues);
             const minY = Math.min(...yValues);
             const maxIndex = yValues.indexOf(maxY);
             const minIndex = yValues.indexOf(minY);
-            
+
             const finalPoint = results[results.length - 1];
             const initialY = results[0].y;
             const totalChange = finalPoint.y - initialY;
-            
+
             document.getElementById('stat-max-y').textContent = maxY.toFixed(4);
             document.getElementById('stat-max-x').textContent = xValues[maxIndex].toFixed(4);
             document.getElementById('stat-min-y').textContent = minY.toFixed(4);
@@ -326,52 +418,54 @@
             document.getElementById('stat-final-x').textContent = finalPoint.x.toFixed(4);
             document.getElementById('stat-points').textContent = results.length;
             document.getElementById('stat-change').textContent = (totalChange >= 0 ? '+' : '') + totalChange.toFixed(4);
-            
+
             document.getElementById('stats-panel').style.display = 'block';
         }
-        
+
         function exportToCSV() {
             if (!currentResults || currentResults.length === 0) {
                 alert('No solution data to export');
                 return;
             }
-            
+
             let csvContent = 'x,y\n';
             currentResults.forEach(point => {
                 csvContent += `${point.x},${point.y}\n`;
             });
-            
+
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
-            
+
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             link.setAttribute('href', url);
             link.setAttribute('download', `ode_solution_${timestamp}.csv`);
             link.style.visibility = 'hidden';
-            
+
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
-        
-        document.addEventListener('DOMContentLoaded', function() {
+
+        document.addEventListener('DOMContentLoaded', function () {
             const exportBtn = document.getElementById('export-csv-btn');
             if (exportBtn) {
                 exportBtn.addEventListener('click', exportToCSV);
             }
-            
+
             const copyBtn = document.getElementById('copy-data-btn');
             if (copyBtn) {
                 copyBtn.addEventListener('click', copyDataToClipboard);
             }
-            
+
             const downloadBtn = document.getElementById('download-graph-btn');
             if (downloadBtn) {
                 downloadBtn.addEventListener('click', downloadGraphAsPNG);
             }
-            
-            document.addEventListener('keydown', function(e) {
+
+            loadSlopeFieldPreferences();
+
+            document.addEventListener('keydown', function (e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                     e.preventDefault();
                     document.getElementById('visualizer-form').dispatchEvent(new Event('submit'));
@@ -379,7 +473,7 @@
                 }
             });
         });
-        
+
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideIn {
@@ -392,20 +486,27 @@
             }
         `;
         document.head.appendChild(style);
-        
+
         function plotSolution(results, method, equation) {
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded yet');
+                setTimeout(() => plotSolution(results, method, equation), 100);
+                return;
+            }
+
             const graphContainer = document.getElementById('graph-container');
             const placeholder = document.querySelector('.visualization-placeholder');
-            
-            graphContainer.style.display = 'block';
-            placeholder.style.display = 'none';
-            
-            const xValues = results.map(point => point.x);
-            const yValues = results.map(point => point.y);
-        
+
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
             if (chartInstance) {
                 chartInstance.destroy();
             }
+
+            const xValues = results.map(r => r.x);
+            const yValues = results.map(r => r.y);
 
             const ctx = document.getElementById('solutionChart').getContext('2d');
             chartInstance = new Chart(ctx, {
@@ -444,10 +545,10 @@
                             mode: 'index',
                             intersect: false,
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return `y = ${context.parsed.y.toFixed(4)}`;
                                 },
-                                title: function(context) {
+                                title: function (context) {
                                     return `x = ${context[0].parsed.x.toFixed(4)}`;
                                 }
                             }
@@ -485,8 +586,236 @@
                     }
                 }
             });
+
+            if (slopeFieldEnabled || document.getElementById('slope-field-toggle').checked) {
+                initializeSlopeFieldCanvas();
+
+                currentEquationForSlope = equation;
+
+                setTimeout(() => {
+                    updateSlopeField();
+                }, 100);
+            }
         }
-        
+
+        let slopeFieldCanvas = null;
+        let slopeFieldCtx = null;
+        let slopeFieldEnabled = false;
+        let slopeFieldDensity = 20;
+        let slopeFieldColor = '#FF6B6B';
+        let slopeFieldOpacity = 0.6;
+        let currentEquationForSlope = null;
+
+        // Custom Chart.js Plugin for Slope Field
+        const slopeFieldPlugin = {
+            id: 'slopeField',
+            afterDraw: (chart) => {
+                if (!slopeFieldEnabled || !currentEquationForSlope) return;
+
+                const ctx = chart.ctx;
+                const xAxis = chart.scales.x;
+                const yAxis = chart.scales.y;
+
+                if (!xAxis || !yAxis) return;
+
+                try {
+                    const f = parseEquationToFunction(currentEquationForSlope);
+
+                    const xMin = xAxis.min;
+                    const xMax = xAxis.max;
+                    const yMin = yAxis.min;
+                    const yMax = yAxis.max;
+
+                    ctx.save();
+                    ctx.strokeStyle = slopeFieldColor;
+                    ctx.globalAlpha = slopeFieldOpacity;
+                    ctx.lineWidth = 1.5;
+
+                    const arrowLengthPixel = 12;
+
+                    for (let i = 0; i <= slopeFieldDensity; i++) {
+                        for (let j = 0; j <= slopeFieldDensity; j++) {
+                            const x = xMin + (i * (xMax - xMin) / slopeFieldDensity);
+                            const y = yMin + (j * (yMax - yMin) / slopeFieldDensity);
+
+                            try {
+                                const slope = f(x, y);
+                                if (!isFinite(slope)) continue;
+
+                                const xPixel = xAxis.getPixelForValue(x);
+                                const yPixel = yAxis.getPixelForValue(y);
+
+                                if (xPixel < chart.chartArea.left || xPixel > chart.chartArea.right ||
+                                    yPixel < chart.chartArea.top || yPixel > chart.chartArea.bottom) {
+                                    continue;
+                                }
+
+                                const deltaX = (xMax - xMin) * 0.001;
+                                const deltaY = slope * deltaX;
+
+                                const x1_pix = xAxis.getPixelForValue(x - deltaX);
+                                const y1_pix = yAxis.getPixelForValue(y - deltaY);
+                                const x2_pix = xAxis.getPixelForValue(x + deltaX);
+                                const y2_pix = yAxis.getPixelForValue(y + deltaY);
+
+                                const dx_pix = x2_pix - x1_pix;
+                                const dy_pix = y2_pix - y1_pix;
+                                const len = Math.sqrt(dx_pix * dx_pix + dy_pix * dy_pix);
+
+                                if (len === 0) continue;
+
+                                const scale = arrowLengthPixel / len;
+                                const offX = dx_pix * scale * 0.5;
+                                const offY = dy_pix * scale * 0.5;
+
+                                ctx.beginPath();
+                                ctx.moveTo(xPixel - offX, yPixel - offY);
+                                ctx.lineTo(xPixel + offX, yPixel + offY);
+                                ctx.stroke();
+
+                            } catch (e) {
+                                continue;
+                            }
+                        }
+                    }
+                    ctx.restore();
+                } catch (error) {
+                    console.error('Slope field error:', error);
+                }
+            }
+        };
+
+        Chart.register(slopeFieldPlugin);
+
+        function parseEquationToFunction(equation) {
+            let cleaned = equation.replace(/\s+/g, '');
+
+            cleaned = cleaned.replace(/sin/g, 'Math.sin');
+            cleaned = cleaned.replace(/cos/g, 'Math.cos');
+            cleaned = cleaned.replace(/tan/g, 'Math.tan');
+            cleaned = cleaned.replace(/exp/g, 'Math.exp');
+            cleaned = cleaned.replace(/log/g, 'Math.log');
+            cleaned = cleaned.replace(/sqrt/g, 'Math.sqrt');
+            cleaned = cleaned.replace(/\*\*/g, '**');
+
+            return new Function('x', 'y', `return ${cleaned};`);
+        }
+
+        // Helper functions for state and plugin updates
+        function updateSlopeField() {
+            if (chartInstance) chartInstance.update();
+        }
+
+        function toggleSlopeField() {
+            slopeFieldEnabled = !slopeFieldEnabled;
+            localStorage.setItem('slopeFieldEnabled', slopeFieldEnabled);
+            updateSlopeField();
+        }
+
+        function updateSlopeFieldDensity(newDensity) {
+            slopeFieldDensity = parseInt(newDensity);
+            localStorage.setItem('slopeFieldDensity', slopeFieldDensity);
+            updateSlopeField();
+        }
+
+        function updateSlopeFieldColor(newColor) {
+            slopeFieldColor = newColor;
+            localStorage.setItem('slopeFieldColor', slopeFieldColor);
+            updateSlopeField();
+        }
+
+        function updateSlopeFieldOpacity(newOpacity) {
+            slopeFieldOpacity = parseFloat(newOpacity);
+            localStorage.setItem('slopeFieldOpacity', slopeFieldOpacity);
+            updateSlopeField();
+        }
+
+        // Obsolete functions - strictly no-op now
+        function initializeSlopeFieldCanvas() { }
+
+        function toggleSlopeFieldPanel() {
+            const panel = document.getElementById('slope-field-controls');
+            const btn = document.getElementById('slope-field-btn');
+
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                btn.textContent = '📐 Hide Slope Field';
+                btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+
+                if (!slopeFieldCanvas) {
+                    initializeSlopeFieldCanvas();
+                }
+
+                const checkbox = document.getElementById('slope-field-toggle');
+                if (checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    slopeFieldEnabled = true;
+                    updateSlopeField();
+                }
+            } else {
+                panel.style.display = 'none';
+                btn.textContent = '📐 Slope Field Visualizer';
+                btn.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
+
+                const checkbox = document.getElementById('slope-field-toggle');
+                if (checkbox && checkbox.checked) {
+                    checkbox.checked = false;
+                    slopeFieldEnabled = false;
+                    if (slopeFieldCanvas) {
+                        slopeFieldCtx.clearRect(0, 0, slopeFieldCanvas.width, slopeFieldCanvas.height);
+                    }
+                }
+            }
+        }
+
+        function updateSlopeFieldDensity(newDensity) {
+            slopeFieldDensity = parseInt(newDensity);
+            localStorage.setItem('slopeFieldDensity', slopeFieldDensity);
+            updateSlopeField();
+        }
+
+        function updateSlopeFieldColor(newColor) {
+            slopeFieldColor = newColor;
+            localStorage.setItem('slopeFieldColor', slopeFieldColor);
+            updateSlopeField();
+        }
+
+        function updateSlopeFieldOpacity(newOpacity) {
+            slopeFieldOpacity = parseFloat(newOpacity);
+            localStorage.setItem('slopeFieldOpacity', slopeFieldOpacity);
+            updateSlopeField();
+        }
+
+        function loadSlopeFieldPreferences() {
+            const savedEnabled = localStorage.getItem('slopeFieldEnabled');
+            const savedDensity = localStorage.getItem('slopeFieldDensity');
+            const savedColor = localStorage.getItem('slopeFieldColor');
+            const savedOpacity = localStorage.getItem('slopeFieldOpacity');
+
+            if (savedEnabled !== null) {
+                slopeFieldEnabled = savedEnabled === 'true';
+            }
+            if (savedDensity !== null) {
+                slopeFieldDensity = parseInt(savedDensity);
+            }
+            if (savedColor !== null) {
+                slopeFieldColor = savedColor;
+            }
+            if (savedOpacity !== null) {
+                slopeFieldOpacity = parseFloat(savedOpacity);
+            }
+
+            const checkbox = document.getElementById('slope-field-toggle');
+            const densitySlider = document.getElementById('slope-density-slider');
+            const colorPicker = document.getElementById('slope-color-picker');
+            const opacitySlider = document.getElementById('slope-opacity-slider');
+
+            if (checkbox) checkbox.checked = slopeFieldEnabled;
+            if (densitySlider) densitySlider.value = slopeFieldDensity;
+            if (colorPicker) colorPicker.value = slopeFieldColor;
+            if (opacitySlider) opacitySlider.value = slopeFieldOpacity;
+        }
+
         const methodDescriptions = {
             'euler': 'Numerical method - requires f(x,y) and step size',
             'direct_integration': 'For y\' = f(x) - function of x only',
@@ -494,8 +823,8 @@
             'integrating_factor': 'For y\' + P(x)y = Q(x) - linear first-order',
             'substitution': 'Uses variable substitution u for transformation'
         };
-        
-        document.getElementById('method').addEventListener('change', function() {
+
+        document.getElementById('method').addEventListener('change', function () {
             const method = this.value;
             const eulerInputs = document.querySelector('.euler-inputs');
             const directInputs = document.querySelector('.direct-inputs');
@@ -503,15 +832,15 @@
             const integratingInputs = document.querySelector('.integrating-inputs');
             const substitutionInputs = document.querySelector('.substitution-inputs');
             const methodDesc = document.getElementById('method-desc');
-            
+
             methodDesc.textContent = methodDescriptions[method];
-            
+
             eulerInputs.style.display = 'none';
             directInputs.style.display = 'none';
             separationInputs.style.display = 'none';
             integratingInputs.style.display = 'none';
             substitutionInputs.style.display = 'none';
-            
+
             document.getElementById('equation_euler').required = false;
             document.getElementById('step_size').required = false;
             document.getElementById('equation_direct').required = false;
@@ -521,7 +850,7 @@
             document.getElementById('q_x').required = false;
             document.getElementById('equation_sub').required = false;
             document.getElementById('substitution_var').required = false;
-            
+
             if (method === 'euler') {
                 eulerInputs.style.display = 'block';
                 document.getElementById('equation_euler').required = true;
@@ -543,157 +872,19 @@
                 document.getElementById('substitution_var').required = true;
             }
         });
-        
-        document.getElementById('visualizer-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const method = document.getElementById('method').value;
-            const parameters = document.getElementById('parameters').value;
-            const x0 = document.getElementById('x0').value;
-            const y0 = document.getElementById('y0').value;
-            const x_end = document.getElementById('x_end').value;
-            const eval_points = document.getElementById('eval_points').value;
-            
-            let payload = {
-                method: method,
-                parameters: parameters,
-                x0: x0,
-                y0: y0,
-                x_end: x_end,
-                eval_points: eval_points
-            };
-            
-            if (method === 'euler') {
-                payload.equation = document.getElementById('equation_euler').value;
-                payload.step_size = document.getElementById('step_size').value;
-            } else if (method === 'direct_integration') {
-                payload.equation = document.getElementById('equation_direct').value;
-            } else if (method === 'separation') {
-                payload.g_x = document.getElementById('g_x').value;
-                payload.h_y = document.getElementById('h_y').value;
-            } else if (method === 'integrating_factor') {
-                payload.p_x = document.getElementById('p_x').value;
-                payload.q_x = document.getElementById('q_x').value;
-            } else if (method === 'substitution') {
-                payload.equation = document.getElementById('equation_sub').value;
-                payload.substitution = document.getElementById('substitution_var').value;
-            }
-            
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result-area processing';
-            resultDiv.innerHTML = '<p>🔄 Processing...</p>';
-            
-            fetch('/simulate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
-                return response.json().then(data => ({
-                    status: response.status,
-                    data: data
-                }));
-            })
-            .then(({status, data}) => {
-                if (status === 200 && data.status === 'success') {
-                    let html = `
-                        <div class="success-header">
-                            <h3>✓ Configuration Successful</h3>
-                        </div>
-                        <div class="result-content">
-                            <div class="result-row">
-                                <strong>Equation:</strong> dy/dx = ${escapeHtml(data.equation)}
-                            </div>`;
-                    
-                    if (data.parameters && Object.keys(data.parameters).length > 0) {
-                        const paramStr = Object.entries(data.parameters)
-                            .map(([k, v]) => `${k}=${v}`)
-                            .join(', ');
-                        html += `
-                            <div class="result-row">
-                                <strong>Parameters:</strong> ${escapeHtml(paramStr)}
-                            </div>`;
-                    }
-                    
-                    html += `
-                            <div class="result-row">
-                                <strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}
-                            </div>
-                            <div class="result-row">
-                                <strong>Method:</strong> ${data.method}
-                            </div>
-                            <div class="result-row">
-                                <strong>Initial Condition:</strong> (${data.x0}, ${data.y0})
-                            </div>
-                            <div class="result-row">
-                                <strong>Domain End:</strong> x_end = ${data.x_end}
-                            </div>`;
-                    
-                    if (data.step_size !== undefined) {
-                        html += `
-                            <div class="result-row">
-                                <strong>Step Size:</strong> h = ${data.step_size}
-                            </div>`;
-                    }
-                    
-                    if (data.eval_points !== undefined) {
-                        html += `
-                            <div class="result-row">
-                                <strong>Evaluation Points:</strong> ${data.eval_points}
-                            </div>`;
-                    }
-                    
-                    html += `
-                        </div>
-                    `;
-                    resultDiv.className = 'result-area success';
-                    resultDiv.innerHTML = html;
-                    
-                    if (data.results && data.results.length > 0) {
-                        plotSolution(data.results, data.method, data.equation);
-                    }
-                } else {
-                    const errorType = data.error_type || 'unknown';
-                    let errorIcon = '✗';
-                    
-                    if (errorType === 'validation' || errorType === 'parse') {
-                        errorIcon = '⚠';
-                    }
-                    
-                    resultDiv.className = 'result-area error';
-                    resultDiv.innerHTML = `
-                        <div class="error-header">
-                            <h3>${errorIcon} Error</h3>
-                        </div>
-                        <p>${escapeHtml(data.message)}</p>
-                    `;
-                }
-            })
-            .catch(error => {
-                resultDiv.className = 'result-area error';
-                resultDiv.innerHTML = `
-                    <div class="error-header">
-                        <h3>✗ Connection Error</h3>
-                    </div>
-                    <p>Failed to connect to server. Please make sure the server is running.</p>
-                `;
-                console.error('Error:', error);
-            });
-        });
-        
+
+        document.getElementById('method').dispatchEvent(new Event('change'));
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-        
+
         let lastSolvePayload = null;
         let baseY0 = null;
         let baseXEnd = null;
-        
+
         function enableY0Slider(initialY0) {
             baseY0 = parseFloat(initialY0);
             const sliderContainer = document.getElementById('y0-slider-container');
@@ -701,10 +892,10 @@
             const valueDisplay = document.getElementById('y0-value');
             const minDisplay = document.getElementById('y0-min');
             const maxDisplay = document.getElementById('y0-max');
-            
+
             const minY0 = baseY0 - Math.abs(baseY0) * 0.5;
             const maxY0 = baseY0 + Math.abs(baseY0) * 0.5;
-            
+
             if (baseY0 === 0) {
                 slider.min = -5;
                 slider.max = 5;
@@ -712,17 +903,17 @@
                 slider.min = minY0;
                 slider.max = maxY0;
             }
-            
+
             slider.value = baseY0;
             slider.step = Math.abs(maxY0 - minY0) / 100;
-            
+
             valueDisplay.textContent = baseY0.toFixed(3);
             minDisplay.textContent = slider.min;
             maxDisplay.textContent = slider.max;
-            
+
             sliderContainer.style.display = 'block';
         }
-        
+
         function enableXEndSlider(initialXEnd, x0) {
             baseXEnd = parseFloat(initialXEnd);
             const x0Val = parseFloat(x0);
@@ -731,31 +922,31 @@
             const valueDisplay = document.getElementById('xend-value');
             const minDisplay = document.getElementById('xend-min');
             const maxDisplay = document.getElementById('xend-max');
-            
+
             const range = baseXEnd - x0Val;
             const minXEnd = x0Val + range * 0.5;
             const maxXEnd = x0Val + range * 2;
-            
+
             slider.min = minXEnd;
             slider.max = maxXEnd;
             slider.value = baseXEnd;
             slider.step = (maxXEnd - minXEnd) / 100;
-            
+
             valueDisplay.textContent = baseXEnd.toFixed(3);
             minDisplay.textContent = minXEnd.toFixed(1);
             maxDisplay.textContent = maxXEnd.toFixed(1);
-            
+
             sliderContainer.style.display = 'block';
         }
-        
+
         function updateSolutionWithNewY0(newY0) {
             if (!lastSolvePayload) return;
-            
+
             const valueDisplay = document.getElementById('y0-value');
             valueDisplay.textContent = parseFloat(newY0).toFixed(3);
-            
-            const updatedPayload = {...lastSolvePayload, y0: newY0};
-            
+
+            const updatedPayload = { ...lastSolvePayload, y0: newY0 };
+
             fetch('/simulate', {
                 method: 'POST',
                 headers: {
@@ -763,25 +954,33 @@
                 },
                 body: JSON.stringify(updatedPayload)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.results && data.results.length > 0) {
-                    const equationDisplay = data.equation || data.parsed_expression || 'Solution';
-                    plotSolution(data.results, data.method, equationDisplay);
-                    calculateStatistics(data.results);
-                }
-            })
-            .catch(error => console.error('Slider update error:', error));
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.results && data.results.length > 0) {
+                        const equationDisplay = data.equation || data.parsed_expression || 'Solution';
+                        plotSolution(data.results, data.method, equationDisplay);
+                        calculateStatistics(data.results);
+
+                        if (slopeFieldEnabled) {
+                            setTimeout(() => updateSlopeField(), 100);
+                        }
+                    } else {
+                        console.error('Slider update failed:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Slider update error:', error);
+                });
         }
-        
+
         function updateSolutionWithNewXEnd(newXEnd) {
             if (!lastSolvePayload) return;
-            
+
             const valueDisplay = document.getElementById('xend-value');
             valueDisplay.textContent = parseFloat(newXEnd).toFixed(3);
-            
-            const updatedPayload = {...lastSolvePayload, x_end: newXEnd};
-            
+
+            const updatedPayload = { ...lastSolvePayload, x_end: newXEnd };
+
             fetch('/simulate', {
                 method: 'POST',
                 headers: {
@@ -789,27 +988,35 @@
                 },
                 body: JSON.stringify(updatedPayload)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.results && data.results.length > 0) {
-                    const equationDisplay = data.equation || data.parsed_expression || 'Solution';
-                    plotSolution(data.results, data.method, equationDisplay);
-                    calculateStatistics(data.results);
-                }
-            })
-            .catch(error => console.error('Slider update error:', error));
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.results && data.results.length > 0) {
+                        const equationDisplay = data.equation || data.parsed_expression || 'Solution';
+                        plotSolution(data.results, data.method, equationDisplay);
+                        calculateStatistics(data.results);
+
+                        if (slopeFieldEnabled) {
+                            setTimeout(() => updateSlopeField(), 100);
+                        }
+                    } else {
+                        console.error('Slider update failed:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Slider update error:', error);
+                });
         }
-        
-        document.getElementById('visualizer-form').addEventListener('submit', function(e) {
+
+        document.getElementById('visualizer-form').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const method = document.getElementById('method').value;
             const parameters = document.getElementById('parameters').value;
             const x0 = document.getElementById('x0').value;
             const y0 = document.getElementById('y0').value;
             const x_end = document.getElementById('x_end').value;
             const eval_points = document.getElementById('eval_points').value;
-            
+
             let payload = {
                 method: method,
                 parameters: parameters,
@@ -818,7 +1025,7 @@
                 x_end: x_end,
                 eval_points: eval_points
             };
-            
+
             if (method === 'euler') {
                 payload.equation = document.getElementById('equation_euler').value;
                 payload.step_size = document.getElementById('step_size').value;
@@ -834,14 +1041,14 @@
                 payload.equation = document.getElementById('equation_sub').value;
                 payload.substitution = document.getElementById('substitution_var').value;
             }
-            
+
             lastSolvePayload = payload;
-            
+
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.className = 'result-area processing';
             resultDiv.innerHTML = '<p>🔄 Processing...</p>';
-            
+
             fetch('/simulate', {
                 method: 'POST',
                 headers: {
@@ -849,15 +1056,20 @@
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => {
-                return response.json().then(data => ({
-                    status: response.status,
-                    data: data
-                }));
-            })
-            .then(({status, data}) => {
-                if (status === 200 && data.status === 'success') {
-                    let html = `
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}...`);
+                        });
+                    }
+                    return response.json().then(data => ({
+                        status: response.status,
+                        data: data
+                    }));
+                })
+                .then(({ status, data }) => {
+                    if (status === 200 && data.status === 'success') {
+                        let html = `
                         <div class="success-header">
                             <h3>✓ Configuration Successful</h3>
                         </div>
@@ -865,21 +1077,30 @@
                             <div class="result-row">
                                 <strong>Equation:</strong> dy/dx = ${escapeHtml(data.equation)}
                             </div>`;
-                    
-                    if (data.parameters && Object.keys(data.parameters).length > 0) {
-                        const paramStr = Object.entries(data.parameters)
-                            .map(([k, v]) => `${k}=${v}`)
-                            .join(', ');
-                        html += `
+
+                        if (data.parameters && Object.keys(data.parameters).length > 0) {
+                            const paramStr = Object.entries(data.parameters)
+                                .map(([k, v]) => `${k}=${v}`)
+                                .join(', ');
+                            html += `
                             <div class="result-row">
                                 <strong>Parameters:</strong> ${escapeHtml(paramStr)}
                             </div>`;
-                    }
-                    
-                    html += `
+                        }
+
+                        html += `
                             <div class="result-row">
                                 <strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}
-                            </div>
+                            </div>`;
+
+                        if (data.analytical_formula) {
+                            html += `
+                            <div class="result-row analytical-solution">
+                                <strong>📐 Exact Solution:</strong> y(x) = ${escapeHtml(data.analytical_formula)}
+                            </div>`;
+                        }
+
+                        html += `
                             <div class="result-row">
                                 <strong>Method:</strong> ${data.method}
                             </div>
@@ -889,64 +1110,98 @@
                             <div class="result-row">
                                 <strong>Domain End:</strong> x_end = ${data.x_end}
                             </div>`;
-                    
-                    if (data.step_size !== undefined) {
-                        html += `
+
+                        if (data.step_size !== undefined) {
+                            html += `
                             <div class="result-row">
                                 <strong>Step Size:</strong> h = ${data.step_size}
                             </div>`;
-                    }
-                    
-                    if (data.eval_points !== undefined) {
-                        html += `
+                        }
+
+                        if (data.eval_points !== undefined) {
+                            html += `
                             <div class="result-row">
                                 <strong>Evaluation Points:</strong> ${data.eval_points}
                             </div>`;
-                    }
-                    
-                    html += `
+                        }
+
+                        html += `
                         </div>
                     `;
-                    resultDiv.className = 'result-area success';
-                    resultDiv.innerHTML = html;
-                    
-                    if (data.results && data.results.length > 0) {
-                        const equationDisplay = data.equation || data.parsed_expression || 'Solution';
-                        plotSolution(data.results, data.method, equationDisplay);
-                        calculateStatistics(data.results);
-                        enableY0Slider(data.y0);
-                        enableXEndSlider(data.x_end, data.x0);
-                        showToast('✓ Solution computed successfully!', 'success');
-                    }
-                } else {
-                    const errorType = data.error_type || 'unknown';
-                    let errorIcon = '✗';
-                    
-                    if (errorType === 'validation' || errorType === 'parse') {
-                        errorIcon = '⚠';
-                    }
-                    
-                    resultDiv.className = 'result-area error';
-                    resultDiv.innerHTML = `
+                        resultDiv.className = 'result-area success';
+                        resultDiv.innerHTML = html;
+
+                        if (data.results && data.results.length > 0) {
+                            document.getElementById('graph-container').style.display = 'block';
+
+                            // Draw the main solution
+                            const equationDisplay = data.equation || data.parsed_expression || 'Solution';
+                            plotSolution(data.results, data.method, equationDisplay);
+                            calculateStatistics(data.results);
+
+                            // Slope Field Logic: Show button and panel for supported methods
+                            // Use the select input value (keys) because data.method contains display names (e.g. "Euler Method")
+                            const currentMethodKey = document.getElementById('method').value;
+                            const slopeBtn = document.getElementById('slope-field-btn');
+
+                            if (currentMethodKey === 'euler' || currentMethodKey === 'substitution') {
+                                currentEquationForSlope = equationDisplay;
+
+                                // Show the toggle button
+                                slopeBtn.style.display = 'block';
+
+                                // Auto-show the controls panel initially
+                                const slopePanel = document.getElementById('slope-field-controls');
+                                slopePanel.style.display = 'block';
+
+                                // Update button state to match open panel
+                                slopeBtn.textContent = '📐 Hide Slope Field';
+                                slopeBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+
+                            } else {
+                                currentEquationForSlope = null;
+                                slopeBtn.style.display = 'none';
+                                document.getElementById('slope-field-controls').style.display = 'none';
+                                if (slopeFieldCanvas) {
+                                    slopeFieldCtx.clearRect(0, 0, slopeFieldCanvas.width, slopeFieldCanvas.height);
+                                }
+                            }
+
+                            // Enable sliders for ALL methods (restoring functionality)
+                            enableY0Slider(data.y0);
+                            enableXEndSlider(data.x_end, data.x0);
+
+                            showToast('✓ Solution computed successfully!', 'success');
+                        }
+                    } else {
+                        const errorType = data.error_type || 'unknown';
+                        let errorIcon = '✗';
+
+                        if (errorType === 'validation' || errorType === 'parse') {
+                            errorIcon = '⚠';
+                        }
+
+                        resultDiv.className = 'result-area error';
+                        resultDiv.innerHTML = `
                         <div class="error-header">
                             <h3>${errorIcon} Error</h3>
                         </div>
                         <p>${escapeHtml(data.message)}</p>
                     `;
-                }
-            })
-            .catch(error => {
-                resultDiv.className = 'result-area error';
-                resultDiv.innerHTML = `
+                    }
+                })
+                .catch(error => {
+                    resultDiv.className = 'result-area error';
+                    resultDiv.innerHTML = `
                     <div class="error-header">
                         <h3>✗ Connection Error</h3>
                     </div>
-                    <p>Failed to connect to server. Please make sure the server is running.</p>
+                    <p>Failed to connect to server. Details: ${escapeHtml(error.message)}</p>
                 `;
-                console.error('Error:', error);
-            });
+                    console.error('Error:', error);
+                });
         });
     </script>
 </body>
-</html>
 
+</html>

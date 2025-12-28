@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quick Solver - ODE VAS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='quick-solver.css') }}">
 </head>
+
 <body>
     <div class="container">
         <a href="/" class="home-btn">← Back to Home</a>
-        
+
         <div class="solver-card">
             <h1>Quick ODE Solver</h1>
             <p class="subtitle">Get numerical solutions fast - no visualization</p>
-            
+
             <form id="solver-form">
                 <div class="form-group">
                     <label for="method">Solving Method</label>
@@ -26,13 +28,13 @@
                     </select>
                     <small id="method-desc">Numerical method for solving ODEs</small>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="parameters">Parameters (optional)</label>
                     <input type="text" id="parameters" placeholder="e.g., k=0.5, a=2">
                     <small>Format: name=value, separated by commas</small>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="x0">x₀ (Initial X)</label>
@@ -43,33 +45,33 @@
                         <input type="number" id="y0" step="0.1" value="1" required>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="x_end">Domain End (x_end)</label>
                     <input type="number" id="x_end" step="0.1" value="10" required>
                     <small>Final value of x where solution stops</small>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="eval_points">Number of Evaluation Points</label>
                     <input type="number" id="eval_points" step="1" value="100" min="10" required>
                     <small>How many coordinates to generate</small>
                 </div>
-                
+
                 <div class="euler-inputs">
                     <div class="form-group">
                         <label for="equation_euler">f(x, y) - Full Derivative Expression</label>
-                        <input type="text" id="equation_euler" placeholder="e.g., x + y, y**2 - x" required>
+                        <input type="text" id="equation_euler" placeholder="e.g., x + y, y**2 - x">
                         <small>Supports: x, y, +, -, *, /, **, sin, cos, exp, tan, log, sqrt</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="step_size">Step Size (h)</label>
-                        <input type="number" id="step_size" step="0.01" value="0.1" min="0.001" required>
+                        <input type="number" id="step_size" step="0.01" value="0.1" min="0.001">
                         <small>Decimal value for calculation jumps</small>
                     </div>
                 </div>
-                
+
                 <div class="direct-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="equation_direct">f(x) - Function of x only</label>
@@ -77,52 +79,52 @@
                         <small>Since y' = f(x), input should only contain x</small>
                     </div>
                 </div>
-                
+
                 <div class="separation-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="g_x">g(x) - Function of x</label>
                         <input type="text" id="g_x" placeholder="e.g., x**2, cos(x)">
                         <small>For y' = g(x) · h(y)</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="h_y">h(y) - Function of y</label>
                         <input type="text" id="h_y" placeholder="e.g., y, y**2">
                         <small>For y' = g(x) · h(y)</small>
                     </div>
                 </div>
-                
+
                 <div class="integrating-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="p_x">P(x) - Coefficient Function</label>
                         <input type="text" id="p_x" placeholder="e.g., 2*x, 1/x">
                         <small>For y' + P(x)y = Q(x)</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="q_x">Q(x) - Right-hand Side Function</label>
                         <input type="text" id="q_x" placeholder="e.g., x**2, sin(x)">
                         <small>For y' + P(x)y = Q(x)</small>
                     </div>
                 </div>
-                
+
                 <div class="substitution-inputs" style="display: none;">
                     <div class="form-group">
                         <label for="equation_sub">f(x, y) - Original ODE</label>
                         <input type="text" id="equation_sub" placeholder="e.g., (y - x)/(y + x)">
                         <small>The original derivative expression</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="substitution_var">Substitution Variable (u)</label>
                         <input type="text" id="substitution_var" placeholder="e.g., y/x, a*x + b*y + c">
                         <small>The substitution rule to use</small>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="solve-btn">Solve</button>
             </form>
-            
+
             <div id="result" class="result-area" style="display: none;"></div>
         </div>
     </div>
@@ -135,8 +137,8 @@
             'integrating_factor': 'For y\' + P(x)y = Q(x) - linear first-order',
             'substitution': 'Uses variable substitution u for transformation'
         };
-        
-        document.getElementById('method').addEventListener('change', function() {
+
+        document.getElementById('method').addEventListener('change', function () {
             const method = this.value;
             const eulerInputs = document.querySelector('.euler-inputs');
             const directInputs = document.querySelector('.direct-inputs');
@@ -144,15 +146,15 @@
             const integratingInputs = document.querySelector('.integrating-inputs');
             const substitutionInputs = document.querySelector('.substitution-inputs');
             const methodDesc = document.getElementById('method-desc');
-            
+
             methodDesc.textContent = methodDescriptions[method];
-            
+
             eulerInputs.style.display = 'none';
             directInputs.style.display = 'none';
             separationInputs.style.display = 'none';
             integratingInputs.style.display = 'none';
             substitutionInputs.style.display = 'none';
-            
+
             document.getElementById('equation_euler').required = false;
             document.getElementById('step_size').required = false;
             document.getElementById('equation_direct').required = false;
@@ -162,7 +164,7 @@
             document.getElementById('q_x').required = false;
             document.getElementById('equation_sub').required = false;
             document.getElementById('substitution_var').required = false;
-            
+
             if (method === 'euler') {
                 eulerInputs.style.display = 'block';
                 document.getElementById('equation_euler').required = true;
@@ -184,17 +186,23 @@
                 document.getElementById('substitution_var').required = true;
             }
         });
-        
-        document.getElementById('solver-form').addEventListener('submit', function(e) {
+
+        document.getElementById('method').dispatchEvent(new Event('change'));
+
+        document.getElementById('solver-form').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
+            console.log('Form submitted');
+
             const method = document.getElementById('method').value;
+            console.log('Selected method:', method);
+
             const parameters = document.getElementById('parameters').value;
             const x0 = document.getElementById('x0').value;
             const y0 = document.getElementById('y0').value;
             const x_end = document.getElementById('x_end').value;
             const eval_points = document.getElementById('eval_points').value;
-            
+
             let payload = {
                 method: method,
                 parameters: parameters,
@@ -203,7 +211,7 @@
                 x_end: x_end,
                 eval_points: eval_points
             };
-            
+
             if (method === 'euler') {
                 payload.equation = document.getElementById('equation_euler').value;
                 payload.step_size = document.getElementById('step_size').value;
@@ -219,12 +227,12 @@
                 payload.equation = document.getElementById('equation_sub').value;
                 payload.substitution = document.getElementById('substitution_var').value;
             }
-            
+
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
             resultDiv.className = 'result-area processing';
             resultDiv.innerHTML = '<p>🔄 Processing...</p>';
-            
+
             fetch('/simulate', {
                 method: 'POST',
                 headers: {
@@ -232,21 +240,21 @@
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => {
-                return response.json().then(data => ({
-                    status: response.status,
-                    data: data
-                }));
-            })
-            .then(({status, data}) => {
-                if (status === 200 && data.status === 'success') {
-                    let html = `
+                .then(response => {
+                    return response.json().then(data => ({
+                        status: response.status,
+                        data: data
+                    }));
+                })
+                .then(({ status, data }) => {
+                    if (status === 200 && data.status === 'success') {
+                        let html = `
                         <div class="success-header">
                             <h3>✓ Solution Complete</h3>
                         </div>`;
-                    
-                    if (data.analytical_formula) {
-                        html += `
+
+                        if (data.analytical_formula) {
+                            html += `
                         <div class="analytical-solution-box">
                             <h4>📐 Exact Analytical Solution</h4>
                             <div class="formula-display">
@@ -254,30 +262,30 @@
                             </div>
                             <small>Particular solution with initial conditions applied</small>
                         </div>`;
-                    } else {
-                        html += `
+                        } else {
+                            html += `
                         <div class="numerical-note">
                             <p>ℹ️ Exact formula not available - numerical approximation provided</p>
                         </div>`;
-                    }
-                    
-                    html += `
+                        }
+
+                        html += `
                         <div class="result-content">
                             <div class="result-row">
                                 <strong>Equation:</strong> dy/dx = ${escapeHtml(data.equation)}
                             </div>`;
-                    
-                    if (data.parameters && Object.keys(data.parameters).length > 0) {
-                        const paramStr = Object.entries(data.parameters)
-                            .map(([k, v]) => `${k}=${v}`)
-                            .join(', ');
-                        html += `
+
+                        if (data.parameters && Object.keys(data.parameters).length > 0) {
+                            const paramStr = Object.entries(data.parameters)
+                                .map(([k, v]) => `${k}=${v}`)
+                                .join(', ');
+                            html += `
                             <div class="result-row">
                                 <strong>Parameters:</strong> ${escapeHtml(paramStr)}
                             </div>`;
-                    }
-                    
-                    html += `
+                        }
+
+                        html += `
                             <div class="result-row">
                                 <strong>Parsed:</strong> dy/dx = ${escapeHtml(data.parsed_expression)}
                             </div>
@@ -290,49 +298,49 @@
                             <div class="result-row">
                                 <strong>Domain End:</strong> x_end = ${data.x_end}
                             </div>`;
-                    
-                    if (data.step_size !== undefined) {
-                        html += `
+
+                        if (data.step_size !== undefined) {
+                            html += `
                             <div class="result-row">
                                 <strong>Step Size:</strong> h = ${data.step_size}
                             </div>`;
-                    }
-                    
-                    if (data.eval_points !== undefined) {
-                        html += `
+                        }
+
+                        if (data.eval_points !== undefined) {
+                            html += `
                             <div class="result-row">
                                 <strong>Evaluation Points:</strong> ${data.eval_points}
                             </div>`;
-                    }
-                    
-                    if (data.g_x && data.h_y) {
-                        html += `
+                        }
+
+                        if (data.g_x && data.h_y) {
+                            html += `
                             <div class="result-row">
                                 <strong>g(x):</strong> ${escapeHtml(data.g_x)}
                             </div>
                             <div class="result-row">
                                 <strong>h(y):</strong> ${escapeHtml(data.h_y)}
                             </div>`;
-                    }
-                    
-                    if (data.p_x && data.q_x) {
-                        html += `
+                        }
+
+                        if (data.p_x && data.q_x) {
+                            html += `
                             <div class="result-row">
                                 <strong>P(x):</strong> ${escapeHtml(data.p_x)}
                             </div>
                             <div class="result-row">
                                 <strong>Q(x):</strong> ${escapeHtml(data.q_x)}
                             </div>`;
-                    }
-                    
-                    if (data.substitution) {
-                        html += `
+                        }
+
+                        if (data.substitution) {
+                            html += `
                             <div class="result-row">
                                 <strong>Substitution:</strong> ${escapeHtml(data.substitution)}
                             </div>`;
-                    }
-                    
-                    html += `
+                        }
+
+                        html += `
                             <div class="result-row">
                                 <strong>Data Points:</strong> ${data.num_points}
                             </div>
@@ -348,81 +356,81 @@
                                     </tr>
                                 </thead>
                                 <tbody>`;
-                
-                    const results = data.results;
-                    const maxDisplay = 50;
-                    
-                    if (results.length <= maxDisplay) {
-                        results.forEach((point, i) => {
-                            html += `
+
+                        const results = data.results;
+                        const maxDisplay = 50;
+
+                        if (results.length <= maxDisplay) {
+                            results.forEach((point, i) => {
+                                html += `
                                 <tr>
                                     <td>${i}</td>
                                     <td>${point.x.toFixed(6)}</td>
                                     <td>${point.y.toFixed(6)}</td>
                                 </tr>`;
-                        });
-                    } else {
-                        for (let i = 0; i < 20; i++) {
-                            html += `
+                            });
+                        } else {
+                            for (let i = 0; i < 20; i++) {
+                                html += `
                                 <tr>
                                     <td>${i}</td>
                                     <td>${results[i].x.toFixed(6)}</td>
                                     <td>${results[i].y.toFixed(6)}</td>
                                 </tr>`;
-                        }
-                        
-                        html += `
+                            }
+
+                            html += `
                             <tr class="ellipsis-row">
                                 <td colspan="3">... (${results.length - 40} points omitted) ...</td>
                             </tr>`;
-                        
-                        for (let i = results.length - 20; i < results.length; i++) {
-                            html += `
+
+                            for (let i = results.length - 20; i < results.length; i++) {
+                                html += `
                                 <tr>
                                     <td>${i}</td>
                                     <td>${results[i].x.toFixed(6)}</td>
                                     <td>${results[i].y.toFixed(6)}</td>
                                 </tr>`;
+                            }
                         }
-                    }
-                    
-                    html += `
+
+                        html += `
                                 </tbody>
                             </table>
                         </div>
                     `;
-                    
-                    resultDiv.className = 'result-area success';
-                    resultDiv.innerHTML = html;
-                } else {
-                    const errorType = data.error_type || 'unknown';
-                    let errorIcon = '✗';
-                    
-                    if (errorType === 'validation' || errorType === 'parse') {
-                        errorIcon = '⚠';
-                    }
-                    
-                    resultDiv.className = 'result-area error';
-                    resultDiv.innerHTML = `
+
+                        resultDiv.className = 'result-area success';
+                        resultDiv.innerHTML = html;
+                    } else {
+                        const errorType = data.error_type || 'unknown';
+                        let errorIcon = '✗';
+
+                        if (errorType === 'validation' || errorType === 'parse') {
+                            errorIcon = '⚠';
+                        }
+
+                        resultDiv.className = 'result-area error';
+                        resultDiv.innerHTML = `
                         <div class="error-header">
                             <h3>${errorIcon} Error</h3>
                         </div>
                         <p>${escapeHtml(data.message)}</p>
                     `;
-                }
-            })
-            .catch(error => {
-                resultDiv.className = 'result-area error';
-                resultDiv.innerHTML = `
+                    }
+                })
+                .catch(error => {
+                    resultDiv.className = 'result-area error';
+                    resultDiv.innerHTML = `
                     <div class="error-header">
                         <h3>✗ Connection Error</h3>
                     </div>
                     <p>Failed to connect to server. Please make sure the server is running.</p>
                 `;
-                console.error('Error:', error);
-            });
+                    console.error('Error:', error);
+                });
         });
-        
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -430,5 +438,5 @@
         }
     </script>
 </body>
-</html>
 
+</html>

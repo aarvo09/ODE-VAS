@@ -1,19 +1,21 @@
 function handleMethodChange() {
     const method = document.getElementById('method').value;
-    const eulerInputs = document.querySelector('.euler-inputs');
-    const directInputs = document.querySelector('.direct-inputs');
-    const separationInputs = document.querySelector('.separation-inputs');
-    const integratingInputs = document.querySelector('.integrating-inputs');
-    const substitutionInputs = document.querySelector('.substitution-inputs');
+    const eulerInputs = document.querySelectorAll('.euler-inputs');
+    const directInputs = document.querySelectorAll('.direct-inputs');
+    const separationInputs = document.querySelectorAll('.separation-inputs');
+    const integratingInputs = document.querySelectorAll('.integrating-inputs');
+    const substitutionInputs = document.querySelectorAll('.substitution-inputs');
     const methodDesc = document.getElementById('method-desc');
 
     methodDesc.textContent = getMethodDescription(method);
 
-    eulerInputs.style.display = 'none';
-    directInputs.style.display = 'none';
-    separationInputs.style.display = 'none';
-    integratingInputs.style.display = 'none';
-    substitutionInputs.style.display = 'none';
+
+    eulerInputs.forEach(el => el.style.display = 'none');
+    directInputs.forEach(el => el.style.display = 'none');
+    separationInputs.forEach(el => el.style.display = 'none');
+    integratingInputs.forEach(el => el.style.display = 'none');
+    substitutionInputs.forEach(el => el.style.display = 'none');
+
 
     document.getElementById('equation_euler').required = false;
     document.getElementById('equation_euler').value = '';
@@ -34,23 +36,24 @@ function handleMethodChange() {
     document.getElementById('substitution_var').required = false;
     document.getElementById('substitution_var').value = '';
 
+
     if (method === 'euler') {
-        eulerInputs.style.display = 'block';
+        eulerInputs.forEach(el => el.style.display = 'block');
         document.getElementById('equation_euler').required = true;
         document.getElementById('step_size').required = true;
     } else if (method === 'direct_integration') {
-        directInputs.style.display = 'block';
+        directInputs.forEach(el => el.style.display = 'block');
         document.getElementById('equation_direct').required = true;
     } else if (method === 'separation') {
-        separationInputs.style.display = 'block';
+        separationInputs.forEach(el => el.style.display = 'block');
         document.getElementById('g_x').required = true;
         document.getElementById('h_y').required = true;
     } else if (method === 'integrating_factor') {
-        integratingInputs.style.display = 'block';
+        integratingInputs.forEach(el => el.style.display = 'block');
         document.getElementById('p_x').required = true;
         document.getElementById('q_x').required = true;
     } else if (method === 'substitution') {
-        substitutionInputs.style.display = 'block';
+        substitutionInputs.forEach(el => el.style.display = 'block');
         document.getElementById('equation_sub').required = true;
         document.getElementById('substitution_var').required = true;
     }

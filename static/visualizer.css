@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #000000;
     min-height: 100vh;
     padding: 40px 20px;
 }
@@ -18,39 +18,43 @@ body {
 
 .home-btn {
     display: inline-block;
-    color: white;
+    color: #FF4444;
     text-decoration: none;
     font-size: 1em;
     margin-bottom: 20px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 25px;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s;
+    padding: 12px 24px;
+    background: transparent;
+    border: 2px solid #FF4444;
+    border-radius: 8px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
 }
 
 .home-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #FF4444;
+    color: #ffffff;
     transform: translateX(-5px);
+    box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
 }
 
 .solver-card {
-    background: white;
-    border-radius: 20px;
+    background: #1a1a1a;
+    border-radius: 12px;
     padding: 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid #2a2a2a;
 }
 
 h1 {
-    color: #667eea;
+    color: #FF4444;
     font-size: 2.5em;
     margin-bottom: 10px;
     text-align: center;
+    font-weight: 700;
 }
 
 .subtitle {
     text-align: center;
-    color: #666;
+    color: #94a3b8;
     font-size: 1.1em;
     margin-bottom: 35px;
 }
@@ -61,7 +65,7 @@ h1 {
 
 .form-group label {
     display: block;
-    color: #333;
+    color: #cbd5e1;
     font-weight: 600;
     margin-bottom: 8px;
     font-size: 0.95em;
@@ -71,17 +75,19 @@ h1 {
 .form-group select {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #2a2a2a;
     border-radius: 8px;
     font-size: 1em;
-    transition: border-color 0.3s;
-    background: white;
+    transition: all 0.3s ease;
+    background: #0d0d0d;
+    color: #ffffff;
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #FF4444;
+    box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.1);
 }
 
 .form-group select {
@@ -90,7 +96,7 @@ h1 {
 
 .form-group small {
     display: block;
-    color: #888;
+    color: #64748b;
     font-size: 0.85em;
     margin-top: 5px;
 }
@@ -103,26 +109,29 @@ h1 {
 
 .solve-btn {
     width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    padding: 16px;
+    background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%);
+    color: #ffffff;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 1.1em;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     margin-top: 10px;
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .solve-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(255, 68, 68, 0.6);
+    background: linear-gradient(135deg, #FF5555 0%, #DD0000 100%);
 }
 
 .solve-btn:active {
-    transform: translateY(0);
+    transform: translateY(-1px) scale(0.98);
 }
 
 .result-area {
@@ -144,30 +153,32 @@ h1 {
 }
 
 .result-area.processing {
-    background: #e3f2fd;
-    border-left: 4px solid #2196f3;
-    color: #1565c0;
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 4px solid #3b82f6;
+    color: #93c5fd;
 }
 
 .result-area.success {
-    background: #e8f5e9;
-    border-left: 4px solid #4caf50;
+    background: rgba(255, 68, 68, 0.1);
+    border-left: 4px solid #FF4444;
+    color: #cbd5e1;
 }
 
 .result-area.error {
-    background: #ffebee;
-    border-left: 4px solid #f44336;
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #ef4444;
+    color: #fca5a5;
 }
 
 .success-header h3,
 .error-header h3 {
-    color: #2e7d32;
+    color: #FF4444;
     margin-bottom: 15px;
     font-size: 1.2em;
 }
 
 .error-header h3 {
-    color: #c62828;
+    color: #ef4444;
 }
 
 .result-content {
@@ -176,7 +187,7 @@ h1 {
 
 .result-row {
     padding: 8px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #2a2a2a;
 }
 
 .result-row:last-child {
@@ -184,26 +195,26 @@ h1 {
 }
 
 .result-row strong {
-    color: #555;
+    color: #94a3b8;
     margin-right: 8px;
 }
 
 .result-row.analytical-solution {
-    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    background: rgba(0, 217, 255, 0.15);
     padding: 15px;
     border-radius: 8px;
     margin: 10px 0;
-    border: 2px solid #7e57c2;
+    border: 2px solid #00d9ff;
     font-size: 1.05em;
 }
 
 .result-row.analytical-solution strong {
-    color: #7e57c2;
+    color: #00d9ff;
 }
 
 .visualization-placeholder {
-    background: linear-gradient(135deg, #f5f5f5 0%, #e8eaf6 100%);
-    border: 2px dashed #9fa8da;
+    background: #1a1f3a;
+    border: 2px dashed #2a3150;
     border-radius: 12px;
     padding: 60px 20px;
     margin-top: 30px;
@@ -213,24 +224,23 @@ h1 {
 .placeholder-icon {
     font-size: 4em;
     margin-bottom: 15px;
-    opacity: 0.6;
-    color: #667eea;
+    color: #00d9ff;
 }
 
 .visualization-placeholder h3 {
-    color: #5e35b1;
+    color: #00d9ff;
     font-size: 1.4em;
     margin-bottom: 10px;
 }
 
 .visualization-placeholder p {
-    color: #7e57c2;
+    color: #94a3b8;
     font-size: 1em;
     margin-bottom: 8px;
 }
 
 .visualization-placeholder small {
-    color: #9575cd;
+    color: #64748b;
     font-size: 0.85em;
 }
 
@@ -247,4 +257,3 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
-

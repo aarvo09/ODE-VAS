@@ -1,0 +1,304 @@
+let formState = null;
+let lastSavedState = null;
+
+function saveFormState() {
+    const form = document.getElementById('advanced-form');
+    const formData = new FormData(form);
+    const state = {};
+    
+    for (let [key, value] of formData.entries()) {
+        state[key] = value;
+    }
+    
+    state.equation = document.getElementById('equation').value;
+    state.x0 = document.getElementById('x0').value;
+    state.y0 = document.getElementById('y0').value;
+    state.x_end = document.getElementById('x_end').value;
+    state.param_name = document.getElementById('param_name').value;
+    state.param_min = document.getElementById('param_min').value;
+    state.param_max = document.getElementById('param_max').value;
+    state.param_steps = document.getElementById('param_steps').value;
+    state.step_sizes = document.getElementById('step_sizes').value;
+    state.show_stability = document.getElementById('show_stability').checked;
+    state.show_phase_portrait = document.getElementById('show_phase_portrait').checked;
+    state.method = document.getElementById('method').value;
+    
+    return state;
+}
+
+function restoreFormState(state) {
+    if (!state) return;
+    
+    document.getElementById('equation').value = state.equation || '';
+    document.getElementById('x0').value = state.x0 || '0';
+    document.getElementById('y0').value = state.y0 || '1';
+    document.getElementById('x_end').value = state.x_end || '10';
+    document.getElementById('param_name').value = state.param_name || '';
+    document.getElementById('param_min').value = state.param_min || '0.5';
+    document.getElementById('param_max').value = state.param_max || '2.0';
+    document.getElementById('param_steps').value = state.param_steps || '5';
+    document.getElementById('step_sizes').value = state.step_sizes || '0.1, 0.05, 0.01';
+    document.getElementById('show_stability').checked = state.show_stability || false;
+    document.getElementById('show_phase_portrait').checked = state.show_phase_portrait || false;
+    document.getElementById('method').value = state.method || 'rk4';
+}
+
+function showModal() {
+    const modal = document.getElementById('confirm-modal');
+    modal.classList.add('show');
+}
+
+function hideModal() {
+    const modal = document.getElementById('confirm-modal');
+    modal.classList.remove('show');
+}
+
+function validateInitialConditions() {
+    const x0 = parseFloat(document.getElementById('x0').value);
+    const xEnd = parseFloat(document.getElementById('x_end').value);
+    const x0Input = document.getElementById('x0');
+    const xEndInput = document.getElementById('x_end');
+    const xEndError = document.getElementById('xend-error');
+    const summary = document.getElementById('initial-conditions-summary');
+    
+    let isValid = true;
+    
+    if (isNaN(xEnd) || xEnd <= x0) {
+        xEndInput.classList.add('invalid');
+        xEndInput.classList.remove('valid');
+        xEndError.textContent = '⚠ x_end must be greater than x₀';
+        isValid = false;
+    } else {
+        xEndInput.classList.add('valid');
+        xEndInput.classList.remove('invalid');
+        xEndError.textContent = '';
+    }
+    
+    if (!isNaN(x0)) {
+        x0Input.classList.add('valid');
+        x0Input.classList.remove('invalid');
+    }
+    
+    if (isValid && !isNaN(x0) && !isNaN(xEnd)) {
+        const range = (xEnd - x0).toFixed(2);
+        summary.innerHTML = `✓ Valid range: [${x0}, ${xEnd}] (span: ${range})`;
+        summary.className = 'validation-summary success';
+    } else {
+        summary.innerHTML = '';
+    }
+    
+    return isValid;
+}
+
+function validateParameterName() {
+    const paramName = document.getElementById('param_name').value;
+    const paramInput = document.getElementById('param_name');
+    const error = document.getElementById('param-name-error');
+    
+    if (paramName.length === 0) {
+        paramInput.classList.remove('valid', 'invalid');
+        error.textContent = '';
+        return true;
+    }
+    
+    const validPattern = /^[a-zA-Z]$/;
+    if (!validPattern.test(paramName)) {
+        paramInput.classList.add('invalid');
+        paramInput.classList.remove('valid');
+        error.textContent = '⚠ Must be a single letter (a-z, A-Z)';
+        return false;
+    } else {
+        paramInput.classList.add('valid');
+        paramInput.classList.remove('invalid');
+        error.textContent = '';
+        return true;
+    }
+}
+
+function validateParameterRange() {
+    const paramMin = parseFloat(document.getElementById('param_min').value);
+    const paramMax = parseFloat(document.getElementById('param_max').value);
+    const minInput = document.getElementById('param_min');
+    const maxInput = document.getElementById('param_max');
+    const minError = document.getElementById('param-min-error');
+    const maxError = document.getElementById('param-max-error');
+    const summary = document.getElementById('parameter-summary');
+    
+    let isValid = true;
+    
+    if (isNaN(paramMin)) {
+        minInput.classList.add('invalid');
+        minInput.classList.remove('valid');
+        minError.textContent = '⚠ Invalid number';
+        isValid = false;
+    } else {
+        minInput.classList.add('valid');
+        minInput.classList.remove('invalid');
+        minError.textContent = '';
+    }
+    
+    if (isNaN(paramMax)) {
+        maxInput.classList.add('invalid');
+        maxInput.classList.remove('valid');
+        maxError.textContent = '⚠ Invalid number';
+        isValid = false;
+    } else if (paramMax <= paramMin) {
+        maxInput.classList.add('invalid');
+        maxInput.classList.remove('valid');
+        maxError.textContent = '⚠ Must be greater than minimum';
+        isValid = false;
+    } else {
+        maxInput.classList.add('valid');
+        maxInput.classList.remove('invalid');
+        maxError.textContent = '';
+    }
+    
+    if (isValid && !isNaN(paramMin) && !isNaN(paramMax)) {
+        summary.innerHTML = `✓ Parameter will vary from ${paramMin} to ${paramMax}`;
+        summary.className = 'validation-summary success';
+    } else {
+        summary.innerHTML = '';
+    }
+    
+    return isValid;
+}
+
+function validateParameterSteps() {
+    const steps = parseInt(document.getElementById('param_steps').value);
+    const stepsInput = document.getElementById('param_steps');
+    const error = document.getElementById('param-steps-error');
+    
+    if (isNaN(steps) || steps < 2 || steps > 10) {
+        stepsInput.classList.add('invalid');
+        stepsInput.classList.remove('valid');
+        error.textContent = '⚠ Must be between 2 and 10';
+        return false;
+    } else {
+        stepsInput.classList.add('valid');
+        stepsInput.classList.remove('invalid');
+        error.textContent = '';
+        return true;
+    }
+}
+
+function validateStepSizes() {
+    const stepSizesStr = document.getElementById('step_sizes').value;
+    const input = document.getElementById('step_sizes');
+    const error = document.getElementById('step-sizes-error');
+    const preview = document.getElementById('step-sizes-preview');
+    
+    if (!stepSizesStr.trim()) {
+        input.classList.remove('valid', 'invalid');
+        error.textContent = '';
+        preview.innerHTML = '';
+        return true;
+    }
+    
+    const values = stepSizesStr.split(',').map(s => s.trim());
+    const numbers = values.map(v => parseFloat(v));
+    
+    const hasInvalid = numbers.some(n => isNaN(n) || n <= 0);
+    
+    if (hasInvalid) {
+        input.classList.add('invalid');
+        input.classList.remove('valid');
+        error.textContent = '⚠ All values must be positive numbers';
+        preview.innerHTML = '';
+        return false;
+    } else {
+        input.classList.add('valid');
+        input.classList.remove('invalid');
+        error.textContent = '';
+        
+        const sortedNumbers = [...numbers].sort((a, b) => b - a);
+        preview.innerHTML = `✓ ${numbers.length} step size(s): ${sortedNumbers.join(', ')}`;
+        preview.className = 'step-size-preview success';
+        
+        return true;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('advanced-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        lastSavedState = saveFormState();
+        
+        const resultsSection = document.getElementById('results');
+        resultsSection.style.display = 'block';
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+        
+        showToast('Analysis started successfully!', 'success');
+        console.log('Advanced analysis form submitted');
+    });
+
+    document.getElementById('clear-form-btn').addEventListener('click', function() {
+        formState = saveFormState();
+        showModal();
+    });
+
+    document.getElementById('confirm-clear').addEventListener('click', function() {
+        const form = document.getElementById('advanced-form');
+        form.reset();
+        
+        const resultsSection = document.getElementById('results');
+        resultsSection.style.display = 'none';
+        
+        hideModal();
+        
+        const restoreBtn = document.getElementById('restore-form-btn');
+        restoreBtn.style.display = 'inline-block';
+        
+        showToast('Form cleared successfully', 'info');
+    });
+
+    document.getElementById('cancel-clear').addEventListener('click', function() {
+        hideModal();
+        formState = null;
+        showToast('Action cancelled', 'warning');
+    });
+
+    document.getElementById('restore-form-btn').addEventListener('click', function() {
+        if (formState) {
+            restoreFormState(formState);
+            showToast('Form restored successfully', 'success');
+            
+            const restoreBtn = document.getElementById('restore-form-btn');
+            restoreBtn.style.display = 'none';
+            formState = null;
+        }
+    });
+
+    document.getElementById('confirm-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideModal();
+            showToast('Action cancelled', 'warning');
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('confirm-modal');
+            if (modal.classList.contains('show')) {
+                hideModal();
+                showToast('Action cancelled', 'warning');
+            }
+        }
+    });
+
+    document.getElementById('equation-examples').addEventListener('change', function() {
+        const selectedExample = this.value;
+        if (selectedExample) {
+            document.getElementById('equation').value = selectedExample;
+            document.getElementById('equation').classList.add('auto-filled');
+            showToast('Example equation loaded', 'success');
+            
+            setTimeout(() => {
+                document.getElementById('equation').classList.remove('auto-filled');
+            }, 1000);
+        }
+    });
+
+    validateInitialConditions();
+    validateStepSizes();
+});

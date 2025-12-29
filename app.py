@@ -146,13 +146,87 @@ def euler_method(f, x0, y0, x_end, h):
             
             x_values.append(x)
             y_values.append(y)
-            
-            if len(x_values) > 100000:
-                break
-        except Exception:
+        except:
             break
     
-    return x_values, y_values
+    results = [{'x': round(x_val, 6), 'y': round(y_val, 6)} 
+               for x_val, y_val in zip(x_values, y_values)]
+    return results
+
+def improved_euler_method(f, x0, y0, x_end, h):
+    x_values = [x0]
+    y_values = [y0]
+    
+    x = x0
+    y = y0
+    
+    while x < x_end:
+        try:
+            k1 = f(x, y)
+            if not np.isfinite(k1):
+                break
+            
+            y_predict = y + h * k1
+            k2 = f(x + h, y_predict)
+            if not np.isfinite(k2):
+                break
+            
+            y_new = y + (h / 2) * (k1 + k2)
+            if not np.isfinite(y_new):
+                break
+            
+            y = y_new
+            x = x + h
+            
+            x_values.append(x)
+            y_values.append(y)
+        except:
+            break
+    
+    results = [{'x': round(x_val, 6), 'y': round(y_val, 6)} 
+               for x_val, y_val in zip(x_values, y_values)]
+    return results
+
+def rk4_method(f, x0, y0, x_end, h):
+    x_values = [x0]
+    y_values = [y0]
+    
+    x = x0
+    y = y0
+    
+    while x < x_end:
+        try:
+            k1 = f(x, y)
+            if not np.isfinite(k1):
+                break
+            
+            k2 = f(x + h/2, y + (h/2) * k1)
+            if not np.isfinite(k2):
+                break
+            
+            k3 = f(x + h/2, y + (h/2) * k2)
+            if not np.isfinite(k3):
+                break
+            
+            k4 = f(x + h, y + h * k3)
+            if not np.isfinite(k4):
+                break
+            
+            y_new = y + (h / 6) * (k1 + 2*k2 + 2*k3 + k4)
+            if not np.isfinite(y_new):
+                break
+            
+            y = y_new
+            x = x + h
+            
+            x_values.append(x)
+            y_values.append(y)
+        except:
+            break
+    
+    results = [{'x': round(x_val, 6), 'y': round(y_val, 6)} 
+               for x_val, y_val in zip(x_values, y_values)]
+    return results
 
 def direct_integration_method(f_x_str, x0, y0, x_end, num_points):
     x_values = np.linspace(x0, x_end, int(num_points))
@@ -270,6 +344,8 @@ def substitution_method(parse_result, x0, y0, x_end, num_points):
 
 METHODS = {
     'euler': {'name': 'Euler Method', 'function': euler_method},
+    'improved_euler': {'name': 'Improved Euler Method', 'function': improved_euler_method},
+    'rk4': {'name': 'Runge-Kutta (RK4)', 'function': rk4_method},
     'direct_integration': {'name': 'Direct Integration', 'function': direct_integration_method},
     'separation': {'name': 'Separation of Variables', 'function': separation_of_variables_method},
     'integrating_factor': {'name': 'Integrating Factor', 'function': integrating_factor_method},
@@ -642,7 +718,14 @@ def advanced_analyze():
                     }), 400
                 
                 try:
-                    expr, f = parse_equation(equation_str, parameters=params)
+                    parse_result = parse_equation(equation_str, parameters=params)
+                    if not parse_result.get('success'):
+                        return jsonify({
+                            'status': 'error',
+                            'message': parse_result.get('error', 'Failed to parse equation'),
+                            'error_type': 'parsing'
+                        }), 400
+                    f = parse_result['function']
                 except Exception as e:
                     return jsonify({
                         'status': 'error',
@@ -654,6 +737,12 @@ def advanced_analyze():
                     if method_key == 'euler':
                         step_size = (x_end - x0) / 100
                         solution = euler_method(f, x0, y0, x_end, step_size)
+                    elif method_key == 'improved_euler':
+                        step_size = (x_end - x0) / 100
+                        solution = improved_euler_method(f, x0, y0, x_end, step_size)
+                    elif method_key == 'rk4':
+                        step_size = (x_end - x0) / 100
+                        solution = rk4_method(f, x0, y0, x_end, step_size)
                     else:
                         solution = METHODS[method_key]['function'](f, x0, y0, x_end, None)
                     

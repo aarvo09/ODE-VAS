@@ -6,6 +6,7 @@
     <title>Advanced Analysis - ODE VAS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='advanced.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='transitions.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/advanced.js') }}" defer></script>
 </head>
@@ -160,10 +161,11 @@
             <div id="results" class="results-section" style="display: none;">
                 <h2>Analysis Results</h2>
                 
-                <div class="result-card">
+                <div id="param-variation-card" class="result-card" style="display: none;">
                     <h3>Parameter Variation</h3>
-                    <div class="visualization-placeholder">
-                        <p>Solution curves for different parameter values will appear here</p>
+                    <div id="param-variation-content">
+                        <canvas id="param-variation-chart"></canvas>
+                        <div id="param-variation-legend" class="chart-legend"></div>
                     </div>
                 </div>
 
@@ -185,3 +187,4 @@
     </div>
 </body>
 </html>
+

@@ -1,5 +1,15 @@
 let formState = null;
 let lastSavedState = null;
+let paramChartInstance = null;
+
+function generateColorGradient(count) {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+        const hue = (i * 360) / count;
+        colors.push(`hsl(${hue}, 70%, 55%)`);
+    }
+    return colors;
+}
 
 function saveFormState() {
     const form = document.getElementById('advanced-form');
@@ -224,12 +234,57 @@ document.addEventListener('DOMContentLoaded', function() {
         
         lastSavedState = saveFormState();
         
+        const formData = {
+            equation: document.getElementById('equation').value,
+            x0: document.getElementById('x0').value,
+            y0: document.getElementById('y0').value,
+            x_end: document.getElementById('x_end').value,
+            method: document.getElementById('method').value,
+            param_name: document.getElementById('param_name').value,
+            param_min: document.getElementById('param_min').value,
+            param_max: document.getElementById('param_max').value,
+            param_steps: document.getElementById('param_steps').value,
+            step_sizes: document.getElementById('step_sizes').value,
+            show_stability: document.getElementById('show_stability').checked,
+            show_phase_portrait: document.getElementById('show_phase_portrait').checked
+        };
+        
         const resultsSection = document.getElementById('results');
         resultsSection.style.display = 'block';
         resultsSection.scrollIntoView({ behavior: 'smooth' });
         
-        showToast('Analysis started successfully!', 'success');
-        console.log('Advanced analysis form submitted');
+        showToast('Starting advanced analysis...', 'info');
+        
+        fetch('/advanced-analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Server error');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('Analysis completed successfully!', 'success');
+                
+                if (data.parameter_variation) {
+                    displayParameterVariation(data.parameter_variation, formData.equation);
+                }
+            } else {
+                showToast('Analysis failed: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Error: ' + error.message, 'error');
+            console.error('Analysis error:', error);
+        });
     });
 
     document.getElementById('clear-form-btn').addEventListener('click', function() {
@@ -302,3 +357,109 @@ document.addEventListener('DOMContentLoaded', function() {
     validateInitialConditions();
     validateStepSizes();
 });
+
+function displayParameterVariation(paramData, equation) {
+    const card = document.getElementById('param-variation-card');
+    const canvas = document.getElementById('param-variation-chart');
+    const legend = document.getElementById('param-variation-legend');
+    
+    card.style.display = 'block';
+    
+    if (paramChartInstance) {
+        paramChartInstance.destroy();
+    }
+    
+    const datasets = [];
+    const colors = generateColorGradient(paramData.datasets.length);
+    
+    paramData.datasets.forEach((dataset, index) => {
+        const data = dataset.results.map(point => ({
+            x: point.x,
+            y: point.y
+        }));
+        
+        datasets.push({
+            label: `${paramData.param_name} = ${dataset.param_value}`,
+            data: data,
+            borderColor: colors[index],
+            backgroundColor: colors[index] + '20',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.4
+        });
+    });
+    
+    const ctx = canvas.getContext('2d');
+    paramChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `dy/dx = ${equation}`,
+                    color: '#FF4444',
+                    font: { size: 16, weight: 'bold' }
+                },
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#ffffff',
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(26, 26, 26, 0.9)',
+                    titleColor: '#FF4444',
+                    bodyColor: '#ffffff',
+                    borderColor: '#FF4444',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: {
+                        display: true,
+                        text: 'x',
+                        color: '#ffffff',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: '#2a2a2a' }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'y',
+                        color: '#ffffff',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: '#2a2a2a' }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+    
+    legend.innerHTML = `
+        <div style="margin-top: 15px; padding: 15px; background: rgba(255, 68, 68, 0.1); border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.3);">
+            <strong style="color: #FF4444;">Parameter Range:</strong> 
+            ${paramData.param_name} ∈ [${paramData.param_min}, ${paramData.param_max}] 
+            with ${paramData.param_steps} steps
+        </div>
+    `;
+}

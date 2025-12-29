@@ -1,6 +1,7 @@
 let formState = null;
 let lastSavedState = null;
 let paramChartInstance = null;
+let stepSizeChartInstance = null;
 
 function generateColorGradient(count) {
     const colors = [];
@@ -277,6 +278,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.parameter_variation) {
                     displayParameterVariation(data.parameter_variation, formData.equation);
                 }
+                
+                if (data.step_size_comparison) {
+                    displayStepSizeComparison(data.step_size_comparison, formData.equation);
+                }
             } else {
                 showToast('Analysis failed: ' + data.message, 'error');
             }
@@ -462,4 +467,128 @@ function displayParameterVariation(paramData, equation) {
             with ${paramData.param_steps} steps
         </div>
     `;
+}
+
+function displayStepSizeComparison(stepData, equation) {
+    const card = document.getElementById('step-size-card');
+    const canvas = document.getElementById('step-size-chart');
+    const tableDiv = document.getElementById('step-size-table');
+    
+    card.style.display = 'block';
+    
+    if (stepSizeChartInstance) {
+        stepSizeChartInstance.destroy();
+    }
+    
+    const errorData = stepData.error_metrics.map(metric => ({
+        x: metric.step_size,
+        y: metric.mean_error
+    }));
+    
+    const ctx = canvas.getContext('2d');
+    stepSizeChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Mean Error vs Step Size',
+                data: errorData,
+                borderColor: '#FF4444',
+                backgroundColor: 'rgba(255, 68, 68, 0.2)',
+                borderWidth: 3,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2.5,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Error Analysis: dy/dx = ${equation}`,
+                    color: '#FF4444',
+                    font: { size: 16, weight: 'bold' }
+                },
+                legend: {
+                    display: true,
+                    labels: { color: '#ffffff' }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(26, 26, 26, 0.9)',
+                    titleColor: '#FF4444',
+                    bodyColor: '#ffffff',
+                    borderColor: '#FF4444',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return `Error: ${context.parsed.y.toExponential(4)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: {
+                        display: true,
+                        text: 'Step Size (h)',
+                        color: '#ffffff',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: '#2a2a2a' }
+                },
+                y: {
+                    type: 'logarithmic',
+                    title: {
+                        display: true,
+                        text: 'Mean Error (log scale)',
+                        color: '#ffffff',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: '#2a2a2a' }
+                }
+            }
+        }
+    });
+    
+    let tableHTML = `
+        <div style="margin-top: 20px;">
+            <h4 style="color: #FF4444; margin-bottom: 15px;">Convergence Analysis</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: rgba(255, 68, 68, 0.2); border-bottom: 2px solid #FF4444;">
+                        <th style="padding: 12px; text-align: left; color: #ffffff;">Step Size (h)</th>
+                        <th style="padding: 12px; text-align: right; color: #ffffff;">Points</th>
+                        <th style="padding: 12px; text-align: right; color: #ffffff;">Max Error</th>
+                        <th style="padding: 12px; text-align: right; color: #ffffff;">Mean Error</th>
+                        <th style="padding: 12px; text-align: right; color: #ffffff;">Convergence Rate</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+    
+    stepData.datasets.forEach((dataset, idx) => {
+        const metric = stepData.error_metrics[idx];
+        const bgColor = idx % 2 === 0 ? 'rgba(255, 68, 68, 0.05)' : 'transparent';
+        tableHTML += `
+                    <tr style="background: ${bgColor}; border-bottom: 1px solid #2a2a2a;">
+                        <td style="padding: 10px; color: #ffffff;">${metric.step_size}</td>
+                        <td style="padding: 10px; text-align: right; color: #94a3b8;">${dataset.num_points}</td>
+                        <td style="padding: 10px; text-align: right; color: #94a3b8;">${metric.max_error.toExponential(4)}</td>
+                        <td style="padding: 10px; text-align: right; color: #94a3b8;">${metric.mean_error.toExponential(4)}</td>
+                        <td style="padding: 10px; text-align: right; color: ${metric.convergence_rate ? '#FF4444' : '#666'}; font-weight: ${metric.convergence_rate ? 'bold' : 'normal'};">
+                            ${metric.convergence_rate !== null ? metric.convergence_rate.toFixed(2) : 'Reference'}
+                        </td>
+                    </tr>`;
+    });
+    
+    tableHTML += `
+                </tbody>
+            </table>
+        </div>`;
+    
+    tableDiv.innerHTML = tableHTML;
 }

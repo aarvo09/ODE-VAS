@@ -901,6 +901,63 @@ def advanced_analyze():
                 'error_type': 'validation'
             }), 400
     
+    show_stability = data.get('show_stability', False)
+    if show_stability:
+        try:
+            x, y = symbols('x y')
+            
+            transformations = standard_transformations + (implicit_multiplication_application,)
+            local_dict = {
+                'x': x, 'y': y,
+                'sin': sin, 'cos': cos, 'exp': exp,
+                'tan': tan, 'log': log, 'sqrt': sqrt
+            }
+            
+            expr = parse_expr(equation_str, local_dict=local_dict, transformations=transformations)
+            
+            equilibrium_points = []
+            try:
+                eq_solutions = solve(expr, y)
+                for sol in eq_solutions:
+                    if sol.is_real or sol.has(x):
+                        try:
+                            derivative = expr.diff(y)
+                            stability_type = 'unknown'
+                            
+                            deriv_at_eq = derivative.subs(y, sol)
+                            
+                            if deriv_at_eq.is_number:
+                                if deriv_at_eq < 0:
+                                    stability_type = 'stable'
+                                elif deriv_at_eq > 0:
+                                    stability_type = 'unstable'
+                                else:
+                                    stability_type = 'neutral'
+                            
+                            equilibrium_points.append({
+                                'y_value': str(sol),
+                                'derivative': str(deriv_at_eq),
+                                'stability': stability_type
+                            })
+                        except Exception:
+                            equilibrium_points.append({
+                                'y_value': str(sol),
+                                'derivative': 'N/A',
+                                'stability': 'unknown'
+                            })
+            except Exception:
+                pass
+            
+            results['stability_analysis'] = {
+                'equilibrium_points': equilibrium_points,
+                'equation_derivative': str(expr.diff(y)) if expr else None
+            }
+        except Exception as e:
+            results['stability_analysis'] = {
+                'error': f'Stability analysis failed: {str(e)}',
+                'equilibrium_points': []
+            }
+    
     return jsonify(results), 200
 
 if __name__ == '__main__':

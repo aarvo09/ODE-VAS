@@ -6,7 +6,7 @@ let baseXEnd = null;
 
 let slopeFieldEnabled = false;
 let slopeFieldDensity = 20;
-let slopeFieldColor = '#FF6B6B';
+let slopeFieldColor = '#FF4444';
 let slopeFieldOpacity = 0.6;
 let currentEquationForSlope = null;
 
@@ -125,12 +125,12 @@ function plotSolution(results, method, equation) {
             datasets: [{
                 label: `y(x) - ${method}`,
                 data: yValues,
-                borderColor: '#3498db',
-                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                borderWidth: 2,
-                pointRadius: 1.5,
-                pointHoverRadius: 5,
-                tension: 0.1,
+                borderColor: '#FF4444',
+                backgroundColor: 'rgba(255, 68, 68, 0.2)',
+                borderWidth: 3,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                tension: 0.4,
                 fill: true
             }]
         },
@@ -142,17 +142,33 @@ function plotSolution(results, method, equation) {
                 legend: {
                     display: true,
                     position: 'top',
+                    labels: {
+                        color: '#ffffff',
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        }
+                    }
                 },
                 title: {
                     display: true,
                     text: `dy/dx = ${equation}`,
+                    color: '#FF4444',
                     font: {
-                        size: 14
+                        size: 16,
+                        weight: 'bold'
                     }
                 },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
+                    backgroundColor: 'rgba(26, 26, 26, 0.9)',
+                    titleColor: '#FF4444',
+                    bodyColor: '#ffffff',
+                    borderColor: '#FF4444',
+                    borderWidth: 1,
                     callbacks: {
                         label: function (context) {
                             return `y = ${context.parsed.y.toFixed(4)}`;
@@ -168,23 +184,35 @@ function plotSolution(results, method, equation) {
                     title: {
                         display: true,
                         text: 'x',
+                        color: '#ffffff',
                         font: {
                             size: 14,
                             weight: 'bold'
                         }
                     },
                     ticks: {
-                        maxTicksLimit: 10
+                        maxTicksLimit: 10,
+                        color: '#94a3b8'
+                    },
+                    grid: {
+                        color: '#2a2a2a'
                     }
                 },
                 y: {
                     title: {
                         display: true,
                         text: 'y',
+                        color: '#ffffff',
                         font: {
                             size: 14,
                             weight: 'bold'
                         }
+                    },
+                    ticks: {
+                        color: '#94a3b8'
+                    },
+                    grid: {
+                        color: '#2a2a2a'
                     }
                 }
             },
@@ -291,6 +319,12 @@ function updateSlopeField() {
 function toggleSlopeField() {
     slopeFieldEnabled = !slopeFieldEnabled;
     localStorage.setItem('slopeFieldEnabled', slopeFieldEnabled);
+    
+    const settingsDiv = document.getElementById('slope-field-settings');
+    if (settingsDiv) {
+        settingsDiv.style.display = slopeFieldEnabled ? 'grid' : 'none';
+    }
+    
     updateSlopeField();
 }
 
@@ -312,32 +346,23 @@ function updateSlopeFieldOpacity(newOpacity) {
     updateSlopeField();
 }
 
-function toggleSlopeFieldPanel() {
-    const panel = document.getElementById('slope-field-controls');
-    const btn = document.getElementById('slope-field-btn');
-
-    if (panel.style.display === 'none' || panel.style.display === '') {
-        panel.style.display = 'block';
-        btn.textContent = '📐 Hide Slope Field';
-        btn.style.background = 'linear-gradient(135deg, #FF4444 0%, #CC0000 100%)';
-
-        const checkbox = document.getElementById('slope-field-toggle');
-        if (checkbox && !checkbox.checked) {
-            checkbox.checked = true;
-            slopeFieldEnabled = true;
-            updateSlopeField();
-        }
-    } else {
-        panel.style.display = 'none';
-        btn.textContent = '📐 Slope Field Visualizer';
-        btn.style.background = 'linear-gradient(135deg, #FF4444 0%, #CC0000 100%)';
-
-        const checkbox = document.getElementById('slope-field-toggle');
-        if (checkbox && checkbox.checked) {
-            checkbox.checked = false;
-            slopeFieldEnabled = false;
-        }
-    }
+function resetSlopeFieldSettings() {
+    slopeFieldDensity = 20;
+    slopeFieldColor = '#FF4444';
+    slopeFieldOpacity = 0.6;
+    
+    localStorage.setItem('slopeFieldDensity', slopeFieldDensity);
+    localStorage.setItem('slopeFieldColor', slopeFieldColor);
+    localStorage.setItem('slopeFieldOpacity', slopeFieldOpacity);
+    
+    document.getElementById('slope-density-slider').value = slopeFieldDensity;
+    document.getElementById('slope-density-value').textContent = slopeFieldDensity;
+    document.getElementById('slope-color-picker').value = slopeFieldColor;
+    document.getElementById('slope-opacity-slider').value = slopeFieldOpacity;
+    document.getElementById('slope-opacity-value').textContent = slopeFieldOpacity;
+    
+    updateSlopeField();
+    showToast('✓ Settings reset to defaults', 'success');
 }
 
 function loadSlopeFieldPreferences() {
@@ -492,6 +517,37 @@ function updateSolutionWithNewXEnd(newXEnd) {
         });
 }
 
+function validateDomainValues() {
+    const x0Input = document.getElementById('x0');
+    const xEndInput = document.getElementById('x_end');
+    const errorDiv = document.getElementById('domain-error');
+    const hint = document.getElementById('x-end-hint');
+    
+    const x0 = parseFloat(x0Input.value);
+    const xEnd = parseFloat(xEndInput.value);
+    
+    if (isNaN(x0) || isNaN(xEnd)) {
+        errorDiv.style.display = 'none';
+        xEndInput.classList.remove('invalid', 'valid');
+        return true;
+    }
+    
+    if (xEnd <= x0) {
+        errorDiv.textContent = `⚠ Domain end (${xEnd}) must be greater than x₀ (${x0})`;
+        errorDiv.style.display = 'block';
+        xEndInput.classList.add('invalid');
+        xEndInput.classList.remove('valid');
+        hint.style.display = 'none';
+        return false;
+    } else {
+        errorDiv.style.display = 'none';
+        xEndInput.classList.remove('invalid');
+        xEndInput.classList.add('valid');
+        hint.style.display = 'block';
+        return true;
+    }
+}
+
 function handleMethodChange() {
     const method = document.getElementById('method').value;
     const eulerInputs = document.querySelector('.euler-inputs');
@@ -510,14 +566,23 @@ function handleMethodChange() {
     substitutionInputs.style.display = 'none';
 
     document.getElementById('equation_euler').required = false;
+    document.getElementById('equation_euler').value = '';
     document.getElementById('step_size').required = false;
+    document.getElementById('step_size').value = '';
     document.getElementById('equation_direct').required = false;
+    document.getElementById('equation_direct').value = '';
     document.getElementById('g_x').required = false;
+    document.getElementById('g_x').value = '';
     document.getElementById('h_y').required = false;
+    document.getElementById('h_y').value = '';
     document.getElementById('p_x').required = false;
+    document.getElementById('p_x').value = '';
     document.getElementById('q_x').required = false;
+    document.getElementById('q_x').value = '';
     document.getElementById('equation_sub').required = false;
+    document.getElementById('equation_sub').value = '';
     document.getElementById('substitution_var').required = false;
+    document.getElementById('substitution_var').value = '';
 
     if (method === 'euler') {
         eulerInputs.style.display = 'block';
@@ -543,6 +608,14 @@ function handleMethodChange() {
 
 function handleFormSubmit(e) {
     e.preventDefault();
+    console.log('Form submit prevented, validation starting...');
+
+    if (!validateDomainValues()) {
+        showToast('⚠ Please fix validation errors before submitting', 'error');
+        return;
+    }
+
+    console.log('Validation passed, proceeding with submission...');
 
     const method = document.getElementById('method').value;
     const parameters = document.getElementById('parameters').value;
@@ -577,6 +650,8 @@ function handleFormSubmit(e) {
     }
 
     lastSolvePayload = payload;
+
+    console.log('Submitting payload:', payload);
 
     const resultDiv = document.getElementById('result');
     resultDiv.style.display = 'block';
@@ -673,21 +748,13 @@ function handleFormSubmit(e) {
                     calculateStatistics(data.results);
 
                     const currentMethodKey = document.getElementById('method').value;
-                    const slopeBtn = document.getElementById('slope-field-btn');
 
                     if (currentMethodKey === 'euler' || currentMethodKey === 'substitution') {
                         currentEquationForSlope = equationDisplay;
-                        slopeBtn.style.display = 'block';
-
                         const slopePanel = document.getElementById('slope-field-controls');
                         slopePanel.style.display = 'block';
-
-                        slopeBtn.textContent = '📐 Hide Slope Field';
-                        slopeBtn.style.background = 'linear-gradient(135deg, #FF4444 0%, #CC0000 100%)';
-
                     } else {
                         currentEquationForSlope = null;
-                        slopeBtn.style.display = 'none';
                         document.getElementById('slope-field-controls').style.display = 'none';
                     }
 
@@ -745,6 +812,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('method').addEventListener('change', handleMethodChange);
     document.getElementById('method').dispatchEvent(new Event('change'));
+
+    document.getElementById('x0').addEventListener('input', validateDomainValues);
+    document.getElementById('x_end').addEventListener('input', validateDomainValues);
 
     document.getElementById('visualizer-form').addEventListener('submit', handleFormSubmit);
 

@@ -277,10 +277,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (data.parameter_variation) {
                     displayParameterVariation(data.parameter_variation, formData.equation);
+                } else {
+                    const card = document.getElementById('param-variation-card');
+                    if (card) card.style.display = 'none';
                 }
                 
                 if (data.step_size_comparison) {
                     displayStepSizeComparison(data.step_size_comparison, formData.equation);
+                } else {
+                    const card = document.getElementById('step-size-card');
+                    if (card) card.style.display = 'none';
+                }
+                
+                if (formData.show_stability && data.stability_analysis) {
+                    displayStabilityAnalysis(data.stability_analysis, formData.equation);
+                } else {
+                    const card = document.getElementById('stability-card');
+                    if (card) card.style.display = 'none';
+                }
+                
+                if (formData.show_phase_portrait && data.phase_portrait) {
+                    displayPhasePortrait(data.phase_portrait, formData.equation);
+                } else {
+                    const card = document.getElementById('phase-portrait-card');
+                    if (card) card.style.display = 'none';
                 }
             } else {
                 showToast('Analysis failed: ' + data.message, 'error');
@@ -383,8 +403,13 @@ function displayParameterVariation(paramData, equation) {
             y: point.y
         }));
         
+        const paramValue = parseFloat(dataset.param_value);
+        const formattedValue = Math.abs(paramValue) >= 1000 || (Math.abs(paramValue) < 0.01 && paramValue !== 0) 
+            ? paramValue.toExponential(2) 
+            : paramValue.toString();
+        
         datasets.push({
-            label: `${paramData.param_name} = ${dataset.param_value}`,
+            label: `${paramData.param_name} = ${formattedValue}`,
             data: data,
             borderColor: colors[index],
             backgroundColor: colors[index] + '20',
@@ -580,7 +605,7 @@ function displayStepSizeComparison(stepData, equation) {
                         <td style="padding: 10px; text-align: right; color: #94a3b8;">${metric.max_error.toExponential(4)}</td>
                         <td style="padding: 10px; text-align: right; color: #94a3b8;">${metric.mean_error.toExponential(4)}</td>
                         <td style="padding: 10px; text-align: right; color: ${metric.convergence_rate ? '#FF4444' : '#666'}; font-weight: ${metric.convergence_rate ? 'bold' : 'normal'};">
-                            ${metric.convergence_rate !== null ? metric.convergence_rate.toFixed(2) : 'Reference'}
+                            ${idx === 0 ? 'Reference' : idx === 1 ? '—' : (metric.convergence_rate !== null ? metric.convergence_rate.toFixed(2) : '—')}
                         </td>
                     </tr>`;
     });
@@ -591,4 +616,208 @@ function displayStepSizeComparison(stepData, equation) {
         </div>`;
     
     tableDiv.innerHTML = tableHTML;
+}
+
+function displayStabilityAnalysis(stabilityData, equation) {
+    const card = document.getElementById('stability-card');
+    const placeholder = document.getElementById('stability-placeholder');
+    
+    card.style.display = 'block';
+    
+    if (stabilityData.error) {
+        placeholder.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #FF4444;">
+                <p><strong>Error:</strong> ${stabilityData.error}</p>
+            </div>`;
+        return;
+    }
+    
+    const equilibriumPoints = stabilityData.equilibrium_points || [];
+    
+    if (equilibriumPoints.length === 0) {
+        placeholder.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #94a3b8;">
+                <p>No equilibrium points found for dy/dx = ${equation}</p>
+                <p style="font-size: 0.9em; margin-top: 10px;">Equilibrium points satisfy dy/dx = 0</p>
+            </div>`;
+        return;
+    }
+    
+    let stabilityHTML = `
+        <div style="padding: 20px;">
+            <h4 style="color: #FF4444; margin-bottom: 15px;">Equilibrium Points Analysis</h4>
+            <p style="color: #94a3b8; margin-bottom: 20px; font-size: 0.95em;">
+                For equation: dy/dx = ${equation}
+            </p>
+            <div style="display: grid; gap: 15px;">`;
+    
+    equilibriumPoints.forEach((point, idx) => {
+        const stabilityColor = {
+            'stable': '#22c55e',
+            'unstable': '#ef4444',
+            'neutral': '#eab308',
+            'unknown': '#94a3b8'
+        }[point.stability] || '#94a3b8';
+        
+        const stabilityIcon = {
+            'stable': '✓',
+            'unstable': '✗',
+            'neutral': '○',
+            'unknown': '?'
+        }[point.stability] || '?';
+        
+        stabilityHTML += `
+            <div style="background: rgba(255, 68, 68, 0.05); border-left: 3px solid ${stabilityColor}; padding: 15px; border-radius: 5px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="color: #ffffff; font-weight: bold;">Equilibrium Point ${idx + 1}:</span>
+                        <span style="color: #FF4444; font-size: 1.1em; margin-left: 10px;">y = ${point.y_value}</span>
+                    </div>
+                    <div style="background: ${stabilityColor}; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em;">
+                        ${stabilityIcon} ${point.stability.toUpperCase()}
+                    </div>
+                </div>
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #2a2a2a;">
+                    <span style="color: #94a3b8;">Derivative at equilibrium:</span>
+                    <span style="color: #ffffff; margin-left: 10px; font-family: monospace;">${point.derivative}</span>
+                </div>
+            </div>`;
+    });
+    
+    stabilityHTML += `
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: rgba(26, 26, 26, 0.5); border-radius: 5px; font-size: 0.9em;">
+                <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Classification Guide:</strong></p>
+                <p style="color: #22c55e;">✓ Stable: f'(y) < 0 - Solutions converge to this point</p>
+                <p style="color: #ef4444;">✗ Unstable: f'(y) > 0 - Solutions diverge from this point</p>
+                <p style="color: #eab308;">○ Neutral: f'(y) = 0 - Further analysis required</p>
+            </div>
+        </div>`;
+    
+    placeholder.innerHTML = stabilityHTML;
+}
+
+let phasePortraitChartInstance = null;
+
+function displayPhasePortrait(phaseData, equation) {
+    const card = document.getElementById('phase-portrait-card');
+    const canvas = document.getElementById('phase-portrait-chart');
+    
+    if (!card || !canvas) return;
+    
+    card.style.display = 'block';
+    
+    if (phasePortraitChartInstance) {
+        phasePortraitChartInstance.destroy();
+    }
+    
+    if (phaseData.error) {
+        card.innerHTML = `
+            <h3>Phase Portrait</h3>
+            <div style="padding: 20px; text-align: center; color: #FF4444;">
+                <p><strong>Error:</strong> ${phaseData.error}</p>
+            </div>`;
+        return;
+    }
+    
+    const trajectories = phaseData.trajectories || [];
+    const equilibriumPoints = phaseData.equilibrium_points || [];
+    
+    const datasets = [];
+    const colors = generateColorGradient(trajectories.length);
+    
+    trajectories.forEach((traj, idx) => {
+        datasets.push({
+            label: `(${traj.x0}, ${traj.y0})`,
+            data: traj.points.map(p => ({ x: p.x, y: p.y })),
+            borderColor: colors[idx],
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0.4
+        });
+    });
+    
+    if (equilibriumPoints.length > 0) {
+        equilibriumPoints.forEach((eq, idx) => {
+            const yValue = parseFloat(eq.y_value);
+            if (!isNaN(yValue)) {
+                const color = eq.stability === 'stable' ? '#22c55e' : eq.stability === 'unstable' ? '#ef4444' : '#eab308';
+                datasets.push({
+                    label: `y=${eq.y_value} (${eq.stability})`,
+                    data: phaseData.x_range.map(x => ({ x: x, y: yValue })),
+                    borderColor: color,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [8, 4],
+                    pointRadius: 0,
+                    tension: 0
+                });
+            }
+        });
+    }
+    
+    const ctx = canvas.getContext('2d');
+    phasePortraitChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2.2,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Phase Portrait: dy/dx = ${equation}`,
+                    color: '#FF4444',
+                    font: { size: 16, weight: 'bold' }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: '#ffffff',
+                        usePointStyle: true,
+                        padding: 8,
+                        font: { size: 10 },
+                        boxWidth: 15,
+                        boxHeight: 2
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(26, 26, 26, 0.9)',
+                    titleColor: '#FF4444',
+                    bodyColor: '#ffffff',
+                    borderColor: '#FF4444',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: {
+                        display: true,
+                        text: 'x',
+                        color: '#ffffff',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: '#2a2a2a' }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'y',
+                        color: '#ffffff',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: '#2a2a2a' }
+                }
+            }
+        }
+    });
 }

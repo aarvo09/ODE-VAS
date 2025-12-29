@@ -16,14 +16,23 @@ function handleMethodChange() {
     substitutionInputs.style.display = 'none';
 
     document.getElementById('equation_euler').required = false;
+    document.getElementById('equation_euler').value = '';
     document.getElementById('step_size').required = false;
+    document.getElementById('step_size').value = '';
     document.getElementById('equation_direct').required = false;
+    document.getElementById('equation_direct').value = '';
     document.getElementById('g_x').required = false;
+    document.getElementById('g_x').value = '';
     document.getElementById('h_y').required = false;
+    document.getElementById('h_y').value = '';
     document.getElementById('p_x').required = false;
+    document.getElementById('p_x').value = '';
     document.getElementById('q_x').required = false;
+    document.getElementById('q_x').value = '';
     document.getElementById('equation_sub').required = false;
+    document.getElementById('equation_sub').value = '';
     document.getElementById('substitution_var').required = false;
+    document.getElementById('substitution_var').value = '';
 
     if (method === 'euler') {
         eulerInputs.style.display = 'block';

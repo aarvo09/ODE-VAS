@@ -431,7 +431,7 @@ def simulate():
         if x_end_val <= x0_val:
             return jsonify({
                 'status': 'error',
-                'message': 'Domain end must be greater than x₀',
+                'message': f'Domain end must be greater than x₀. Got x_end={x_end_val}, x0={x0_val}',
                 'error_type': 'validation'
             }), 400
     except ValueError:
@@ -556,7 +556,9 @@ def simulate():
                 }), 400
             
             f = parse_result['function']
-            x_values, y_values = method_function(f, x0_val, y0_val, x_end_val, step_size_val)
+            results = method_function(f, x0_val, y0_val, x_end_val, step_size_val)
+            x_values = [r['x'] for r in results]
+            y_values = [r['y'] for r in results]
             parsed_expr = parse_result['expression']
             
         elif method_key == 'direct_integration':
@@ -817,7 +819,7 @@ def advanced_analyze():
                 }), 400
             
             step_size_datasets = []
-            reference_solution = None
+            all_solutions = []
             
             for idx, h in enumerate(step_size_values_sorted):
                 try:
@@ -834,8 +836,7 @@ def advanced_analyze():
                             'error_type': 'validation'
                         }), 400
                     
-                    if idx == 0:
-                        reference_solution = solution
+                    all_solutions.append(solution)
                     
                     step_size_datasets.append({
                         'step_size': h,
@@ -849,7 +850,10 @@ def advanced_analyze():
                         'error_type': 'calculation'
                     }), 400
             
+            reference_solution = all_solutions[0]
+            
             error_metrics = []
+            
             for idx, dataset in enumerate(step_size_datasets):
                 if idx == 0:
                     error_metrics.append({
@@ -872,15 +876,13 @@ def advanced_analyze():
                 max_error = max(errors) if errors else 0.0
                 mean_error = sum(errors) / len(errors) if errors else 0.0
                 
-                if idx > 1:
-                    prev_error = error_metrics[idx - 1]['mean_error']
-                    h_ratio = step_size_datasets[idx - 1]['step_size'] / dataset['step_size']
-                    if prev_error > 0 and mean_error > 0:
-                        convergence_rate = np.log(prev_error / mean_error) / np.log(h_ratio)
-                    else:
-                        convergence_rate = None
-                else:
-                    convergence_rate = None
+                convergence_rate = None
+                if idx >= 2:
+                    prev_mean_error = error_metrics[idx - 1]['mean_error']
+                    prev_step_size = error_metrics[idx - 1]['step_size']
+                    h_ratio = prev_step_size / dataset['step_size']
+                    if prev_mean_error > 0 and mean_error > 0:
+                        convergence_rate = np.log(prev_mean_error / mean_error) / np.log(h_ratio)
                 
                 error_metrics.append({
                     'step_size': dataset['step_size'],
@@ -901,6 +903,7 @@ def advanced_analyze():
                 'error_type': 'validation'
             }), 400
     
+    equilibrium_points = []
     show_stability = data.get('show_stability', False)
     if show_stability:
         try:
@@ -956,6 +959,58 @@ def advanced_analyze():
             results['stability_analysis'] = {
                 'error': f'Stability analysis failed: {str(e)}',
                 'equilibrium_points': []
+            }
+    
+    show_phase_portrait = data.get('show_phase_portrait', False)
+    if show_phase_portrait and method_key in ['euler', 'improved_euler', 'rk4']:
+        try:
+            parse_result = parse_equation(equation_str, parameters={})
+            if parse_result.get('success'):
+                f = parse_result['function']
+                
+                y0_base = float(data.get('y0', 1))
+                x_mid = (x0 + x_end) / 2
+                x_quarter = x0 + (x_end - x0) / 4
+                
+                y_range = max(abs(y0_base) * 3, 5)
+                y_min = -y_range if y0_base < 0 else y0_base - y_range
+                y_max = y_range if y0_base < 0 else y0_base + y_range
+                
+                starting_points = [
+                    (x0, y0_base * 0.3),
+                    (x0, y0_base * 0.7),
+                    (x0, y0_base),
+                    (x0, y0_base * 1.3),
+                    (x0, y0_base * 1.7),
+                    (x_quarter, y_min + (y_max - y_min) * 0.3),
+                    (x_quarter, y_min + (y_max - y_min) * 0.7),
+                ]
+                
+                trajectories = []
+                for idx, (x_start, y_start) in enumerate(starting_points):
+                    if method_key == 'euler':
+                        traj = euler_method(f, x_start, y_start, x_end, 0.01)
+                    elif method_key == 'improved_euler':
+                        traj = improved_euler_method(f, x_start, y_start, x_end, 0.01)
+                    elif method_key == 'rk4':
+                        traj = rk4_method(f, x_start, y_start, x_end, 0.01)
+                    
+                    if len(traj) > 1:
+                        trajectories.append({
+                            'x0': round(x_start, 2),
+                            'y0': round(y_start, 3),
+                            'points': traj
+                        })
+                
+                results['phase_portrait'] = {
+                    'trajectories': trajectories,
+                    'x_range': [x0, x_end],
+                    'equilibrium_points': equilibrium_points if show_stability else []
+                }
+        except Exception as e:
+            results['phase_portrait'] = {
+                'error': f'Phase portrait generation failed: {str(e)}',
+                'trajectories': []
             }
     
     return jsonify(results), 200

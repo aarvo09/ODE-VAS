@@ -177,10 +177,17 @@
                     </div>
                 </div>
 
-                <div class="result-card">
+                <div id="stability-card" class="result-card" style="display: none;">
                     <h3>Stability Analysis</h3>
-                    <div class="visualization-placeholder">
+                    <div id="stability-placeholder" class="visualization-placeholder">
                         <p>Equilibrium points and phase portrait will appear here</p>
+                    </div>
+                </div>
+
+                <div id="phase-portrait-card" class="result-card" style="display: none;">
+                    <h3>Phase Portrait</h3>
+                    <div id="phase-portrait-content">
+                        <canvas id="phase-portrait-chart"></canvas>
                     </div>
                 </div>
             </div>

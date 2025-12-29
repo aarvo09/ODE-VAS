@@ -319,12 +319,12 @@ function updateSlopeField() {
 function toggleSlopeField() {
     slopeFieldEnabled = !slopeFieldEnabled;
     localStorage.setItem('slopeFieldEnabled', slopeFieldEnabled);
-    
+
     const settingsDiv = document.getElementById('slope-field-settings');
     if (settingsDiv) {
         settingsDiv.style.display = slopeFieldEnabled ? 'grid' : 'none';
     }
-    
+
     updateSlopeField();
 }
 
@@ -350,17 +350,17 @@ function resetSlopeFieldSettings() {
     slopeFieldDensity = 20;
     slopeFieldColor = '#E11D48';
     slopeFieldOpacity = 0.6;
-    
+
     localStorage.setItem('slopeFieldDensity', slopeFieldDensity);
     localStorage.setItem('slopeFieldColor', slopeFieldColor);
     localStorage.setItem('slopeFieldOpacity', slopeFieldOpacity);
-    
+
     document.getElementById('slope-density-slider').value = slopeFieldDensity;
     document.getElementById('slope-density-value').textContent = slopeFieldDensity;
     document.getElementById('slope-color-picker').value = slopeFieldColor;
     document.getElementById('slope-opacity-slider').value = slopeFieldOpacity;
     document.getElementById('slope-opacity-value').textContent = slopeFieldOpacity;
-    
+
     updateSlopeField();
     showToast('Settings reset to defaults', 'success');
 }
@@ -522,16 +522,16 @@ function validateDomainValues() {
     const xEndInput = document.getElementById('x_end');
     const errorDiv = document.getElementById('domain-error');
     const hint = document.getElementById('x-end-hint');
-    
+
     const x0 = parseFloat(x0Input.value);
     const xEnd = parseFloat(xEndInput.value);
-    
+
     if (isNaN(x0) || isNaN(xEnd)) {
         errorDiv.style.display = 'none';
         xEndInput.classList.remove('invalid', 'valid');
         return true;
     }
-    
+
     if (xEnd <= x0) {
         errorDiv.textContent = `⚠ Domain end (${xEnd}) must be greater than x₀ (${x0})`;
         errorDiv.style.display = 'block';
@@ -765,16 +765,16 @@ function handleFormSubmit(e) {
                 }
             } else {
                 const errorType = data.error_type || 'unknown';
-                let errorIcon = '✗';
+                let errorIcon = '<span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">error</span>';
 
                 if (errorType === 'validation' || errorType === 'parse') {
-                    errorIcon = '⚠';
+                    errorIcon = '<span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">warning</span>';
                 }
 
                 resultDiv.className = 'result-area error';
                 resultDiv.innerHTML = `
                 <div class="error-header">
-                    <h3>${errorIcon} Error</h3>
+                    <h3 style="display: flex; align-items: center;">${errorIcon} Error</h3>
                 </div>
                 <p>${escapeHtml(data.message)}</p>
             `;
@@ -784,7 +784,7 @@ function handleFormSubmit(e) {
             resultDiv.className = 'result-area error';
             resultDiv.innerHTML = `
             <div class="error-header">
-                <h3>✗ Connection Error</h3>
+                <h3 style="display: flex; align-items: center;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">wifi_off</span> Connection Error</h3>
             </div>
             <p>Failed to connect to server. Details: ${escapeHtml(error.message)}</p>
         `;

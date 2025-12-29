@@ -7,7 +7,9 @@
     <title>ODE VAS - Ordinary Differential Equation Visualizer - Analyzer & Solver</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='transitions.css') }}">
 </head>
@@ -24,21 +26,27 @@
 
             <div class="modes-container">
                 <div class="mode-card">
-                    <div class="mode-icon">📊</div>
+                    <div class="mode-icon">
+                        <span class="material-symbols-outlined">monitoring</span>
+                    </div>
                     <h3>Interactive Visualizer</h3>
                     <p>Full-featured mode with interactive graphs, slope fields, and method comparison</p>
                     <a href="/solver?mode=visualize" class="mode-btn">Visualize & Solve</a>
                 </div>
 
                 <div class="mode-card">
-                    <div class="mode-icon">⚡</div>
+                    <div class="mode-icon">
+                        <span class="material-symbols-outlined">bolt</span>
+                    </div>
                     <h3>Quick Solver</h3>
                     <p>Get numerical solutions quickly without visualization - perfect for calculations</p>
                     <a href="/quick-solver" class="mode-btn">Just Solve</a>
                 </div>
 
                 <div class="mode-card">
-                    <div class="mode-icon">🔬</div>
+                    <div class="mode-icon">
+                        <span class="material-symbols-outlined">biotech</span>
+                    </div>
                     <h3>Advanced Mode</h3>
                     <p>Parameter variation, stability analysis, and step-size control for in-depth study</p>
                     <a href="/advanced" class="mode-btn">Advanced Analysis</a>
@@ -49,27 +57,39 @@
                 <h2>Features</h2>
                 <div class="features-grid">
                     <div class="feature-item">
-                        <span class="feature-icon">✓</span>
+                        <span class="feature-icon">
+                            <span class="material-symbols-outlined">check_circle</span>
+                        </span>
                         <span>Three numerical methods: Euler, Improved Euler, RK4</span>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">✓</span>
+                        <span class="feature-icon">
+                            <span class="material-symbols-outlined">check_circle</span>
+                        </span>
                         <span>Parameterized equations support</span>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">✓</span>
+                        <span class="feature-icon">
+                            <span class="material-symbols-outlined">check_circle</span>
+                        </span>
                         <span>Interactive solution curves & slope fields</span>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">✓</span>
+                        <span class="feature-icon">
+                            <span class="material-symbols-outlined">check_circle</span>
+                        </span>
                         <span>Method comparison & accuracy analysis</span>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">✓</span>
+                        <span class="feature-icon">
+                            <span class="material-symbols-outlined">check_circle</span>
+                        </span>
                         <span>Real-time equation validation</span>
                     </div>
                     <div class="feature-item">
-                        <span class="feature-icon">✓</span>
+                        <span class="feature-icon">
+                            <span class="material-symbols-outlined">check_circle</span>
+                        </span>
                         <span>Step-size control & domain configuration</span>
                     </div>
                 </div>

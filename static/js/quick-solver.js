@@ -271,16 +271,16 @@ function handleFormSubmit(e) {
                 resultDiv.innerHTML = html;
             } else {
                 const errorType = data.error_type || 'unknown';
-                let errorIcon = '✗';
+                let errorIcon = '<span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">error</span>';
 
                 if (errorType === 'validation' || errorType === 'parse') {
-                    errorIcon = '⚠';
+                    errorIcon = '<span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">warning</span>';
                 }
 
                 resultDiv.className = 'result-area error';
                 resultDiv.innerHTML = `
                 <div class="error-header">
-                    <h3>${errorIcon} Error</h3>
+                    <h3 style="display: flex; align-items: center;">${errorIcon} Error</h3>
                 </div>
                 <p>${escapeHtml(data.message)}</p>
             `;
@@ -290,7 +290,7 @@ function handleFormSubmit(e) {
             resultDiv.className = 'result-area error';
             resultDiv.innerHTML = `
             <div class="error-header">
-                <h3>✗ Connection Error</h3>
+                <h3 style="display: flex; align-items: center;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">wifi_off</span> Connection Error</h3>
             </div>
             <p>Failed to connect to server. Please make sure the server is running.</p>
         `;
@@ -298,7 +298,7 @@ function handleFormSubmit(e) {
         });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('method').addEventListener('change', handleMethodChange);
     document.getElementById('method').dispatchEvent(new Event('change'));
 

@@ -16,11 +16,11 @@ function saveFormState() {
     const form = document.getElementById('advanced-form');
     const formData = new FormData(form);
     const state = {};
-    
+
     for (let [key, value] of formData.entries()) {
         state[key] = value;
     }
-    
+
     state.equation = document.getElementById('equation').value;
     state.x0 = document.getElementById('x0').value;
     state.y0 = document.getElementById('y0').value;
@@ -33,13 +33,13 @@ function saveFormState() {
     state.show_stability = document.getElementById('show_stability').checked;
     state.show_phase_portrait = document.getElementById('show_phase_portrait').checked;
     state.method = document.getElementById('method').value;
-    
+
     return state;
 }
 
 function restoreFormState(state) {
     if (!state) return;
-    
+
     document.getElementById('equation').value = state.equation || '';
     document.getElementById('x0').value = state.x0 || '0';
     document.getElementById('y0').value = state.y0 || '1';
@@ -71,9 +71,9 @@ function validateInitialConditions() {
     const xEndInput = document.getElementById('x_end');
     const xEndError = document.getElementById('xend-error');
     const summary = document.getElementById('initial-conditions-summary');
-    
+
     let isValid = true;
-    
+
     if (isNaN(xEnd) || xEnd <= x0) {
         xEndInput.classList.add('invalid');
         xEndInput.classList.remove('valid');
@@ -84,12 +84,12 @@ function validateInitialConditions() {
         xEndInput.classList.remove('invalid');
         xEndError.textContent = '';
     }
-    
+
     if (!isNaN(x0)) {
         x0Input.classList.add('valid');
         x0Input.classList.remove('invalid');
     }
-    
+
     if (isValid && !isNaN(x0) && !isNaN(xEnd)) {
         const range = (xEnd - x0).toFixed(2);
         summary.innerHTML = `Valid range: [${x0}, ${xEnd}] (span: ${range})`;
@@ -97,7 +97,7 @@ function validateInitialConditions() {
     } else {
         summary.innerHTML = '';
     }
-    
+
     return isValid;
 }
 
@@ -105,13 +105,13 @@ function validateParameterName() {
     const paramName = document.getElementById('param_name').value;
     const paramInput = document.getElementById('param_name');
     const error = document.getElementById('param-name-error');
-    
+
     if (paramName.length === 0) {
         paramInput.classList.remove('valid', 'invalid');
         error.textContent = '';
         return true;
     }
-    
+
     const validPattern = /^[a-zA-Z]$/;
     if (!validPattern.test(paramName)) {
         paramInput.classList.add('invalid');
@@ -134,9 +134,9 @@ function validateParameterRange() {
     const minError = document.getElementById('param-min-error');
     const maxError = document.getElementById('param-max-error');
     const summary = document.getElementById('parameter-summary');
-    
+
     let isValid = true;
-    
+
     if (isNaN(paramMin)) {
         minInput.classList.add('invalid');
         minInput.classList.remove('valid');
@@ -147,7 +147,7 @@ function validateParameterRange() {
         minInput.classList.remove('invalid');
         minError.textContent = '';
     }
-    
+
     if (isNaN(paramMax)) {
         maxInput.classList.add('invalid');
         maxInput.classList.remove('valid');
@@ -163,14 +163,14 @@ function validateParameterRange() {
         maxInput.classList.remove('invalid');
         maxError.textContent = '';
     }
-    
+
     if (isValid && !isNaN(paramMin) && !isNaN(paramMax)) {
         summary.innerHTML = `Parameter will vary from ${paramMin} to ${paramMax}`;
         summary.className = 'validation-summary success';
     } else {
         summary.innerHTML = '';
     }
-    
+
     return isValid;
 }
 
@@ -178,7 +178,7 @@ function validateParameterSteps() {
     const steps = parseInt(document.getElementById('param_steps').value);
     const stepsInput = document.getElementById('param_steps');
     const error = document.getElementById('param-steps-error');
-    
+
     if (isNaN(steps) || steps < 2 || steps > 10) {
         stepsInput.classList.add('invalid');
         stepsInput.classList.remove('valid');
@@ -197,19 +197,19 @@ function validateStepSizes() {
     const input = document.getElementById('step_sizes');
     const error = document.getElementById('step-sizes-error');
     const preview = document.getElementById('step-sizes-preview');
-    
+
     if (!stepSizesStr.trim()) {
         input.classList.remove('valid', 'invalid');
         error.textContent = '';
         preview.innerHTML = '';
         return true;
     }
-    
+
     const values = stepSizesStr.split(',').map(s => s.trim());
     const numbers = values.map(v => parseFloat(v));
-    
+
     const hasInvalid = numbers.some(n => isNaN(n) || n <= 0);
-    
+
     if (hasInvalid) {
         input.classList.add('invalid');
         input.classList.remove('valid');
@@ -220,21 +220,21 @@ function validateStepSizes() {
         input.classList.add('valid');
         input.classList.remove('invalid');
         error.textContent = '';
-        
+
         const sortedNumbers = [...numbers].sort((a, b) => b - a);
         preview.innerHTML = `${numbers.length} step size(s): ${sortedNumbers.join(', ')}`;
         preview.className = 'step-size-preview success';
-        
+
         return true;
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('advanced-form').addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('advanced-form').addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         lastSavedState = saveFormState();
-        
+
         const formData = {
             equation: document.getElementById('equation').value,
             x0: document.getElementById('x0').value,
@@ -249,13 +249,13 @@ document.addEventListener('DOMContentLoaded', function() {
             show_stability: document.getElementById('show_stability').checked,
             show_phase_portrait: document.getElementById('show_phase_portrait').checked
         };
-        
+
         const resultsSection = document.getElementById('results');
         resultsSection.style.display = 'block';
         resultsSection.scrollIntoView({ behavior: 'smooth' });
-        
+
         showToast('Starting advanced analysis...', 'info');
-        
+
         fetch('/advanced-analyze', {
             method: 'POST',
             headers: {
@@ -263,100 +263,100 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(formData)
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'Server error');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                showToast('Analysis completed successfully!', 'success');
-                
-                if (data.parameter_variation) {
-                    displayParameterVariation(data.parameter_variation, formData.equation);
-                } else {
-                    const card = document.getElementById('param-variation-card');
-                    if (card) card.style.display = 'none';
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Server error');
+                    });
                 }
-                
-                if (data.step_size_comparison) {
-                    displayStepSizeComparison(data.step_size_comparison, formData.equation);
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('Analysis completed successfully!', 'success');
+
+                    if (data.parameter_variation) {
+                        displayParameterVariation(data.parameter_variation, formData.equation);
+                    } else {
+                        const card = document.getElementById('param-variation-card');
+                        if (card) card.style.display = 'none';
+                    }
+
+                    if (data.step_size_comparison) {
+                        displayStepSizeComparison(data.step_size_comparison, formData.equation);
+                    } else {
+                        const card = document.getElementById('step-size-card');
+                        if (card) card.style.display = 'none';
+                    }
+
+                    if (formData.show_stability && data.stability_analysis) {
+                        displayStabilityAnalysis(data.stability_analysis, formData.equation);
+                    } else {
+                        const card = document.getElementById('stability-card');
+                        if (card) card.style.display = 'none';
+                    }
+
+                    if (formData.show_phase_portrait && data.phase_portrait) {
+                        displayPhasePortrait(data.phase_portrait, formData.equation);
+                    } else {
+                        const card = document.getElementById('phase-portrait-card');
+                        if (card) card.style.display = 'none';
+                    }
                 } else {
-                    const card = document.getElementById('step-size-card');
-                    if (card) card.style.display = 'none';
+                    showToast('Analysis failed: ' + data.message, 'error');
                 }
-                
-                if (formData.show_stability && data.stability_analysis) {
-                    displayStabilityAnalysis(data.stability_analysis, formData.equation);
-                } else {
-                    const card = document.getElementById('stability-card');
-                    if (card) card.style.display = 'none';
-                }
-                
-                if (formData.show_phase_portrait && data.phase_portrait) {
-                    displayPhasePortrait(data.phase_portrait, formData.equation);
-                } else {
-                    const card = document.getElementById('phase-portrait-card');
-                    if (card) card.style.display = 'none';
-                }
-            } else {
-                showToast('Analysis failed: ' + data.message, 'error');
-            }
-        })
-        .catch(error => {
-            showToast('Error: ' + error.message, 'error');
-            console.error('Analysis error:', error);
-        });
+            })
+            .catch(error => {
+                showToast('Error: ' + error.message, 'error');
+                console.error('Analysis error:', error);
+            });
     });
 
-    document.getElementById('clear-form-btn').addEventListener('click', function() {
+    document.getElementById('clear-form-btn').addEventListener('click', function () {
         formState = saveFormState();
         showModal();
     });
 
-    document.getElementById('confirm-clear').addEventListener('click', function() {
+    document.getElementById('confirm-clear').addEventListener('click', function () {
         const form = document.getElementById('advanced-form');
         form.reset();
-        
+
         const resultsSection = document.getElementById('results');
         resultsSection.style.display = 'none';
-        
+
         hideModal();
-        
+
         const restoreBtn = document.getElementById('restore-form-btn');
         restoreBtn.style.display = 'inline-block';
-        
+
         showToast('Form cleared successfully', 'info');
     });
 
-    document.getElementById('cancel-clear').addEventListener('click', function() {
+    document.getElementById('cancel-clear').addEventListener('click', function () {
         hideModal();
         formState = null;
         showToast('Action cancelled', 'warning');
     });
 
-    document.getElementById('restore-form-btn').addEventListener('click', function() {
+    document.getElementById('restore-form-btn').addEventListener('click', function () {
         if (formState) {
             restoreFormState(formState);
             showToast('Form restored successfully', 'success');
-            
+
             const restoreBtn = document.getElementById('restore-form-btn');
             restoreBtn.style.display = 'none';
             formState = null;
         }
     });
 
-    document.getElementById('confirm-modal').addEventListener('click', function(e) {
+    document.getElementById('confirm-modal').addEventListener('click', function (e) {
         if (e.target === this) {
             hideModal();
             showToast('Action cancelled', 'warning');
         }
     });
 
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             const modal = document.getElementById('confirm-modal');
             if (modal.classList.contains('show')) {
@@ -366,13 +366,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    document.getElementById('equation-examples').addEventListener('change', function() {
+    document.getElementById('equation-examples').addEventListener('change', function () {
         const selectedExample = this.value;
         if (selectedExample) {
             document.getElementById('equation').value = selectedExample;
             document.getElementById('equation').classList.add('auto-filled');
             showToast('Example equation loaded', 'success');
-            
+
             setTimeout(() => {
                 document.getElementById('equation').classList.remove('auto-filled');
             }, 1000);
@@ -387,27 +387,27 @@ function displayParameterVariation(paramData, equation) {
     const card = document.getElementById('param-variation-card');
     const canvas = document.getElementById('param-variation-chart');
     const legend = document.getElementById('param-variation-legend');
-    
+
     card.style.display = 'block';
-    
+
     if (paramChartInstance) {
         paramChartInstance.destroy();
     }
-    
+
     const datasets = [];
     const colors = generateColorGradient(paramData.datasets.length);
-    
+
     paramData.datasets.forEach((dataset, index) => {
         const data = dataset.results.map(point => ({
             x: point.x,
             y: point.y
         }));
-        
+
         const paramValue = parseFloat(dataset.param_value);
-        const formattedValue = Math.abs(paramValue) >= 1000 || (Math.abs(paramValue) < 0.01 && paramValue !== 0) 
-            ? paramValue.toExponential(2) 
+        const formattedValue = Math.abs(paramValue) >= 1000 || (Math.abs(paramValue) < 0.01 && paramValue !== 0)
+            ? paramValue.toExponential(2)
             : paramValue.toString();
-        
+
         datasets.push({
             label: `${paramData.param_name} = ${formattedValue}`,
             data: data,
@@ -419,7 +419,7 @@ function displayParameterVariation(paramData, equation) {
             tension: 0.4
         });
     });
-    
+
     const ctx = canvas.getContext('2d');
     paramChartInstance = new Chart(ctx, {
         type: 'line',
@@ -484,7 +484,7 @@ function displayParameterVariation(paramData, equation) {
             }
         }
     });
-    
+
     legend.innerHTML = `
         <div style="margin-top: 15px; padding: 15px; background: rgba(255, 68, 68, 0.1); border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.3);">
             <strong style="color: #FF4444;">Parameter Range:</strong> 
@@ -498,18 +498,18 @@ function displayStepSizeComparison(stepData, equation) {
     const card = document.getElementById('step-size-card');
     const canvas = document.getElementById('step-size-chart');
     const tableDiv = document.getElementById('step-size-table');
-    
+
     card.style.display = 'block';
-    
+
     if (stepSizeChartInstance) {
         stepSizeChartInstance.destroy();
     }
-    
+
     const errorData = stepData.error_metrics.map(metric => ({
         x: metric.step_size,
         y: metric.mean_error
     }));
-    
+
     const ctx = canvas.getContext('2d');
     stepSizeChartInstance = new Chart(ctx, {
         type: 'line',
@@ -547,7 +547,7 @@ function displayStepSizeComparison(stepData, equation) {
                     borderColor: '#FF4444',
                     borderWidth: 1,
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return `Error: ${context.parsed.y.toExponential(4)}`;
                         }
                     }
@@ -579,7 +579,7 @@ function displayStepSizeComparison(stepData, equation) {
             }
         }
     });
-    
+
     let tableHTML = `
         <div style="margin-top: 20px;">
             <h4 style="color: #FF4444; margin-bottom: 15px;">Convergence Analysis</h4>
@@ -594,7 +594,7 @@ function displayStepSizeComparison(stepData, equation) {
                     </tr>
                 </thead>
                 <tbody>`;
-    
+
     stepData.datasets.forEach((dataset, idx) => {
         const metric = stepData.error_metrics[idx];
         const bgColor = idx % 2 === 0 ? 'rgba(255, 68, 68, 0.05)' : 'transparent';
@@ -609,21 +609,21 @@ function displayStepSizeComparison(stepData, equation) {
                         </td>
                     </tr>`;
     });
-    
+
     tableHTML += `
                 </tbody>
             </table>
         </div>`;
-    
+
     tableDiv.innerHTML = tableHTML;
 }
 
 function displayStabilityAnalysis(stabilityData, equation) {
     const card = document.getElementById('stability-card');
     const placeholder = document.getElementById('stability-placeholder');
-    
+
     card.style.display = 'block';
-    
+
     if (stabilityData.error) {
         placeholder.innerHTML = `
             <div style="padding: 20px; text-align: center; color: #FF4444;">
@@ -631,9 +631,9 @@ function displayStabilityAnalysis(stabilityData, equation) {
             </div>`;
         return;
     }
-    
+
     const equilibriumPoints = stabilityData.equilibrium_points || [];
-    
+
     if (equilibriumPoints.length === 0) {
         placeholder.innerHTML = `
             <div style="padding: 20px; text-align: center; color: #94a3b8;">
@@ -642,7 +642,7 @@ function displayStabilityAnalysis(stabilityData, equation) {
             </div>`;
         return;
     }
-    
+
     let stabilityHTML = `
         <div style="padding: 20px;">
             <h4 style="color: #FF4444; margin-bottom: 15px;">Equilibrium Points Analysis</h4>
@@ -650,7 +650,7 @@ function displayStabilityAnalysis(stabilityData, equation) {
                 For equation: dy/dx = ${equation}
             </p>
             <div style="display: grid; gap: 15px;">`;
-    
+
     equilibriumPoints.forEach((point, idx) => {
         const stabilityColor = {
             'stable': '#22c55e',
@@ -658,14 +658,14 @@ function displayStabilityAnalysis(stabilityData, equation) {
             'neutral': '#eab308',
             'unknown': '#94a3b8'
         }[point.stability] || '#94a3b8';
-        
+
         const stabilityIcon = {
-            'stable': 'Stable',
-            'unstable': '✗',
-            'neutral': '○',
-            'unknown': '?'
+            'stable': '<span class="material-symbols-outlined" style="vertical-align: -3px;">check_circle</span>',
+            'unstable': '<span class="material-symbols-outlined" style="vertical-align: -3px;">cancel</span>',
+            'neutral': '<span class="material-symbols-outlined" style="vertical-align: -3px;">remove_circle</span>',
+            'unknown': '<span class="material-symbols-outlined" style="vertical-align: -3px;">help</span>'
         }[point.stability] || '?';
-        
+
         stabilityHTML += `
             <div style="background: rgba(255, 68, 68, 0.05); border-left: 3px solid ${stabilityColor}; padding: 15px; border-radius: 5px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -673,7 +673,7 @@ function displayStabilityAnalysis(stabilityData, equation) {
                         <span style="color: #ffffff; font-weight: bold;">Equilibrium Point ${idx + 1}:</span>
                         <span style="color: #FF4444; font-size: 1.1em; margin-left: 10px;">y = ${point.y_value}</span>
                     </div>
-                    <div style="background: ${stabilityColor}; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em;">
+                    <div style="background: ${stabilityColor}; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; display: flex; align-items: center; gap: 5px;">
                         ${stabilityIcon} ${point.stability.toUpperCase()}
                     </div>
                 </div>
@@ -683,17 +683,26 @@ function displayStabilityAnalysis(stabilityData, equation) {
                 </div>
             </div>`;
     });
-    
+
     stabilityHTML += `
             </div>
             <div style="margin-top: 20px; padding: 15px; background: rgba(26, 26, 26, 0.5); border-radius: 5px; font-size: 0.9em;">
                 <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Classification Guide:</strong></p>
-                <p style="color: #22c55e;">Stable: f'(y) < 0 - Solutions converge to this point</p>
-                <p style="color: #ef4444;">✗ Unstable: f'(y) > 0 - Solutions diverge from this point</p>
-                <p style="color: #eab308;">○ Neutral: f'(y) = 0 - Further analysis required</p>
+                <div style="color: #22c55e; display: flex; align-items: center; gap: 5px; margin-bottom: 4px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span> 
+                    Stable: f'(y) < 0 - Solutions converge to this point
+                </div>
+                <div style="color: #ef4444; display: flex; align-items: center; gap: 5px; margin-bottom: 4px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">cancel</span>
+                    Unstable: f'(y) > 0 - Solutions diverge from this point
+                </div>
+                <div style="color: #eab308; display: flex; align-items: center; gap: 5px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">remove_circle</span>
+                    Neutral: f'(y) = 0 - Further analysis required
+                </div>
             </div>
         </div>`;
-    
+
     placeholder.innerHTML = stabilityHTML;
 }
 
@@ -702,15 +711,15 @@ let phasePortraitChartInstance = null;
 function displayPhasePortrait(phaseData, equation) {
     const card = document.getElementById('phase-portrait-card');
     const canvas = document.getElementById('phase-portrait-chart');
-    
+
     if (!card || !canvas) return;
-    
+
     card.style.display = 'block';
-    
+
     if (phasePortraitChartInstance) {
         phasePortraitChartInstance.destroy();
     }
-    
+
     if (phaseData.error) {
         card.innerHTML = `
             <h3>Phase Portrait</h3>
@@ -719,13 +728,13 @@ function displayPhasePortrait(phaseData, equation) {
             </div>`;
         return;
     }
-    
+
     const trajectories = phaseData.trajectories || [];
     const equilibriumPoints = phaseData.equilibrium_points || [];
-    
+
     const datasets = [];
     const colors = generateColorGradient(trajectories.length);
-    
+
     trajectories.forEach((traj, idx) => {
         datasets.push({
             label: `(${traj.x0}, ${traj.y0})`,
@@ -738,7 +747,7 @@ function displayPhasePortrait(phaseData, equation) {
             tension: 0.4
         });
     });
-    
+
     if (equilibriumPoints.length > 0) {
         equilibriumPoints.forEach((eq, idx) => {
             const yValue = parseFloat(eq.y_value);
@@ -757,7 +766,7 @@ function displayPhasePortrait(phaseData, equation) {
             }
         });
     }
-    
+
     const ctx = canvas.getContext('2d');
     phasePortraitChartInstance = new Chart(ctx, {
         type: 'line',

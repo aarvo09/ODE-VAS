@@ -7,7 +7,9 @@
     <title>Advanced Analysis - ODE VAS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="{{ url_for('static', filename='advanced.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='transitions.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -35,7 +37,10 @@
     </div>
 
     <div class="container">
-        <a href="/" class="home-btn">Back to Home</a>
+        <a href="/" class="home-btn" style="display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+            Back to Home
+        </a>
 
         <div class="advanced-card">
             <h1>Advanced ODE Analysis</h1>

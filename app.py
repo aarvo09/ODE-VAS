@@ -312,7 +312,6 @@ def integrating_factor_method(p_x_str, q_x_str, x0, y0, x_end, num_points):
     return x_values.tolist(), y_values, solution_str
 
 def substitution_method(parse_result, x0, y0, x_end, num_points):
-    """Attempt an exact solution via dsolve; fall back to numerical Euler."""
     try:
         x, y = symbols('x y')
         Y = Function('y')

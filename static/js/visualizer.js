@@ -6,7 +6,7 @@ let baseXEnd = null;
 
 let slopeFieldEnabled = false;
 let slopeFieldDensity = 20;
-let slopeFieldColor = '#FF4444';
+let slopeFieldColor = '#E11D48';
 let slopeFieldOpacity = 0.6;
 let currentEquationForSlope = null;
 
@@ -125,8 +125,8 @@ function plotSolution(results, method, equation) {
             datasets: [{
                 label: `y(x) - ${method}`,
                 data: yValues,
-                borderColor: '#FF4444',
-                backgroundColor: 'rgba(255, 68, 68, 0.2)',
+                borderColor: '#E11D48',
+                backgroundColor: 'rgba(225, 29, 72, 0.1)',
                 borderWidth: 3,
                 pointRadius: 0,
                 pointHoverRadius: 6,
@@ -155,7 +155,7 @@ function plotSolution(results, method, equation) {
                 title: {
                     display: true,
                     text: `dy/dx = ${equation}`,
-                    color: '#FF4444',
+                    color: '#E11D48',
                     font: {
                         size: 16,
                         weight: 'bold'
@@ -165,9 +165,9 @@ function plotSolution(results, method, equation) {
                     mode: 'index',
                     intersect: false,
                     backgroundColor: 'rgba(26, 26, 26, 0.9)',
-                    titleColor: '#FF4444',
-                    bodyColor: '#ffffff',
-                    borderColor: '#FF4444',
+                    titleColor: '#E11D48',
+                    bodyColor: '#EDEDED',
+                    borderColor: '#E11D48',
                     borderWidth: 1,
                     callbacks: {
                         label: function (context) {
@@ -195,7 +195,7 @@ function plotSolution(results, method, equation) {
                         color: '#94a3b8'
                     },
                     grid: {
-                        color: '#2a2a2a'
+                        color: '#262626'
                     }
                 },
                 y: {
@@ -212,7 +212,7 @@ function plotSolution(results, method, equation) {
                         color: '#94a3b8'
                     },
                     grid: {
-                        color: '#2a2a2a'
+                        color: '#262626'
                     }
                 }
             },
@@ -348,7 +348,7 @@ function updateSlopeFieldOpacity(newOpacity) {
 
 function resetSlopeFieldSettings() {
     slopeFieldDensity = 20;
-    slopeFieldColor = '#FF4444';
+    slopeFieldColor = '#E11D48';
     slopeFieldOpacity = 0.6;
     
     localStorage.setItem('slopeFieldDensity', slopeFieldDensity);

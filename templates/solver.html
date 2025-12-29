@@ -7,7 +7,7 @@
     <title>Interactive Visualizer - ODE VAS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='visualizer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='transitions.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -59,7 +59,8 @@
                     <label for="x_end">Domain End (x_end)</label>
                     <input type="number" id="x_end" step="0.1" placeholder="e.g., 10" value="10" required>
                     <small id="x-end-hint">Final value of x where solution stops</small>
-                    <div id="domain-error" style="color: #FF4444; font-size: 0.9em; margin-top: 5px; display: none;"></div>
+                    <div id="domain-error" style="color: #EF4444; font-size: 0.9em; margin-top: 5px; display: none;">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -133,224 +134,118 @@
                     </div>
                 </div>
 
-                <button type="submit" class="solve-btn">Visualize</button>
+                <button type="submit" class="solve-btn">Visualize Solution</button>
             </form>
 
             <div id="result" class="result-area" style="display: none;"></div>
 
-            <div id="graph-container"
-                style="display: none; margin-top: 30px; background: #1a1a1a; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border: 1px solid #2a2a2a;">
-                <h3 style="margin: 0 0 15px 0; color: #FF4444; font-weight: 600;">Solution Graph</h3>
 
-                <div id="slope-field-controls"
-                    style="display: none; margin-bottom: 20px; padding: 18px; background: rgba(26, 26, 26, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; color: white; border: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
-                    <div style="margin-bottom: 15px;">
-                        <h4
-                            style="margin: 0 0 10px 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: #FF4444;">
-                            Direction Field (Slope Field)
-                        </h4>
-                        <label
-                            style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
-                            <input type="checkbox" id="slope-field-toggle" onchange="toggleSlopeField()"
-                                style="width: 20px; height: 20px; cursor: pointer;">
-                            <span style="font-size: 14px; font-weight: 500;">Show Direction Field</span>
-                        </label>
-                        <small style="display: block; margin-top: 8px; opacity: 0.9; line-height: 1.4;">
-                            Visualize the derivative dy/dx as small line segments showing the slope at each point
-                        </small>
+            <div id="graph-container" class="graph-panel" style="display: none;">
+                <div class="graph-header">
+                    <h3>Solution Graph</h3>
+                </div>
+
+
+                <div id="slope-field-controls" class="settings-panel" style="display: none;">
+                    <div class="settings-header">
+                        <input type="checkbox" id="slope-field-toggle" onchange="toggleSlopeField()">
+                        <label for="slope-field-toggle" style="margin:0; cursor:pointer;">Show Direction Field</label>
                     </div>
 
-                    <div id="slope-field-settings"
-                        style="display: none; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2);">
-                            <label
-                                style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #ffffff;">
-                                Density: <span id="slope-density-value" style="color: #FF4444;">20</span>
-                            </label>
+                    <div id="slope-field-settings" class="control-grid" style="display: none;">
+                        <div class="control-item">
+                            <label>Density: <span id="slope-density-value">20</span></label>
                             <input type="range" id="slope-density-slider" min="10" max="40" step="5"
-                                oninput="updateSlopeFieldDensity(this.value); document.getElementById('slope-density-value').textContent = this.value;"
-                                style="width: 100%; cursor: pointer;">
-                            <small style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.8;">
-                                Arrows per axis
-                            </small>
+                                oninput="updateSlopeFieldDensity(this.value); document.getElementById('slope-density-value').textContent = this.value;">
                         </div>
-
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2);">
-                            <label
-                                style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #ffffff;">
-                                Opacity: <span id="slope-opacity-value" style="color: #FF4444;">0.6</span>
-                            </label>
+                        <div class="control-item">
+                            <label>Opacity: <span id="slope-opacity-value">0.6</span></label>
                             <input type="range" id="slope-opacity-slider" min="0.1" max="1" step="0.1"
-                                oninput="updateSlopeFieldOpacity(this.value); document.getElementById('slope-opacity-value').textContent = this.value;"
-                                style="width: 100%; cursor: pointer;">
-                            <small style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.8;">
-                                Transparency level
-                            </small>
+                                oninput="updateSlopeFieldOpacity(this.value); document.getElementById('slope-opacity-value').textContent = this.value;">
                         </div>
-
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2);">
-                            <label
-                                style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #ffffff;">
-                                Color
-                            </label>
-                            <input type="color" id="slope-color-picker" onchange="updateSlopeFieldColor(this.value)"
-                                style="width: 100%; height: 35px; border: none; border-radius: 6px; cursor: pointer; background: none;">
-                            <small style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.8;">
-                                Arrow color
-                            </small>
+                        <div class="control-item">
+                            <label>Arrow Color</label>
+                            <input type="color" id="slope-color-picker" onchange="updateSlopeFieldColor(this.value)">
                         </div>
-
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2); display: flex; align-items: center; justify-content: center;">
-                            <button onclick="resetSlopeFieldSettings()"
-                                style="width: 100%; background: #FF4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s;"
-                                onmouseover="this.style.background='#CC0000'"
-                                onmouseout="this.style.background='#FF4444'">
-                                🔄 Reset Settings
-                            </button>
-                        </div>
+                        <button onclick="resetSlopeFieldSettings()" class="action-btn"
+                            style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center;">
+                            Reset Defaults
+                        </button>
                     </div>
                 </div>
-                
+
                 <canvas id="solutionChart"></canvas>
 
-                <div id="y0-slider-container"
-                    style="display: none; margin-top: 25px; padding: 20px; background: rgba(26, 26, 26, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
-                    <div
-                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                        <label style="font-weight: 600; color: #ffffff; font-size: 15px;">
-                            🎚️ Adjust y₀ (Initial Condition)
-                        </label>
-                        <span
-                            style="background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%); color: white; padding: 6px 14px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);">
-                            y₀ = <span id="y0-value">1.000</span>
-                        </span>
+
+                <div id="y0-slider-container" class="settings-panel" style="display: none; margin-top: 20px;">
+                    <div class="settings-header">
+                        <span>Initial Condition (y₀)</span>
+                        <span class="stat-value" style="font-size: 1em;" id="y0-value">1.000</span>
                     </div>
-                    <input type="range" id="y0-slider"
-                        style="width: 100%; height: 6px; border-radius: 5px; background: rgba(255, 255, 255, 0.1); outline: none; cursor: pointer; accent-color: #FF4444;"
-                        oninput="updateSolutionWithNewY0(this.value)">
+                    <input type="range" id="y0-slider" oninput="updateSolutionWithNewY0(this.value)">
                     <div
-                        style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.7);">
-                        <span>Min: <strong id="y0-min" style="color: #FF4444;">-5</strong></span>
-                        <span>Max: <strong id="y0-max" style="color: #FF4444;">5</strong></span>
+                        style="display: flex; justify-content: space-between; font-size: 0.8em; color: var(--text-muted); margin-top: 5px;">
+                        <span>Min: <span id="y0-min">-5</span></span>
+                        <span>Max: <span id="y0-max">5</span></span>
                     </div>
-                    <small
-                        style="display: block; margin-top: 10px; color: rgba(255, 255, 255, 0.6); font-style: italic; line-height: 1.5;">
-                        Move the slider to explore how different initial conditions affect the solution
-                    </small>
-                </div>
-                <div id="xend-slider-container"
-                    style="display: none; margin-top: 15px; padding: 20px; background: rgba(26, 26, 26, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
-                    <div
-                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                        <label style="font-weight: 600; color: #ffffff; font-size: 15px;">
-                            🎚️ Adjust x_end (Domain Range)
-                        </label>
-                        <span
-                            style="background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%); color: white; padding: 6px 14px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);">
-                            x_end = <span id="xend-value">10.000</span>
-                        </span>
-                    </div>
-                    <input type="range" id="xend-slider"
-                        style="width: 100%; height: 6px; border-radius: 5px; background: rgba(255, 255, 255, 0.1); outline: none; cursor: pointer; accent-color: #FF4444;"
-                        oninput="updateSolutionWithNewXEnd(this.value)">
-                    <div
-                        style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.7);">
-                        <span>Min: <strong id="xend-min" style="color: #FF4444;">5</strong></span>
-                        <span>Max: <strong id="xend-max" style="color: #FF4444;">20</strong></span>
-                    </div>
-                    <small
-                        style="display: block; margin-top: 10px; color: rgba(255, 255, 255, 0.6); font-style: italic; line-height: 1.5;">
-                        Move the slider to extend or shorten the solution domain
-                    </small>
                 </div>
 
-                <div id="stats-panel"
-                    style="display: none; margin-top: 20px; padding: 18px; background: rgba(26, 26, 26, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; color: white; border: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);">
+                <div id="xend-slider-container" class="settings-panel" style="display: none; margin-top: 10px;">
+                    <div class="settings-header">
+                        <span>Domain Range (x_end)</span>
+                        <span class="stat-value" style="font-size: 1em;" id="xend-value">10.000</span>
+                    </div>
+                    <input type="range" id="xend-slider" oninput="updateSolutionWithNewXEnd(this.value)">
                     <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4
-                            style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: #FF4444;">
-                            Solution Statistics
-                        </h4>
+                        style="display: flex; justify-content: space-between; font-size: 0.8em; color: var(--text-muted); margin-top: 5px;">
+                        <span>Min: <span id="xend-min">5</span></span>
+                        <span>Max: <span id="xend-max">20</span></span>
+                    </div>
+                </div>
+
+
+                <div id="stats-panel" class="settings-panel" style="display: none; margin-top: 20px;">
+                    <div class="graph-header" style="margin-bottom: 10px;">
+                        <h4 style="margin:0; font-size: 1em; color: var(--text-main);">Statistics</h4>
                         <div style="display: flex; gap: 8px;">
-                            <button id="copy-data-btn"
-                                style="background: white; color: #FF4444; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
-                                onmouseover="this.style.transform='scale(1.05)'"
-                                onmouseout="this.style.transform='scale(1)'">
-                                📋 Copy
-                            </button>
-                            <button id="download-graph-btn"
-                                style="background: white; color: #FF4444; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
-                                onmouseover="this.style.transform='scale(1.05)'"
-                                onmouseout="this.style.transform='scale(1)'">
-                                🖼️ PNG
-                            </button>
-                            <button id="export-csv-btn"
-                                style="background: white; color: #FF4444; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 13px; transition: transform 0.2s;"
-                                onmouseover="this.style.transform='scale(1.05)'"
-                                onmouseout="this.style.transform='scale(1)'">
-                                💾 CSV
-                            </button>
+                            <button id="copy-data-btn" class="action-btn">Copy</button>
+                            <button id="download-graph-btn" class="action-btn">PNG</button>
+                            <button id="export-csv-btn" class="action-btn">CSV</button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2);">
-                            <div
-                                style="font-size: 11px; opacity: 0.9; margin-bottom: 4px; color: rgba(255, 255, 255, 0.7);">
-                                Maximum Y</div>
-                            <div style="font-weight: 700; font-size: 18px; color: #FF4444;" id="stat-max-y">-</div>
-                            <div
-                                style="font-size: 10px; opacity: 0.8; margin-top: 2px; color: rgba(255, 255, 255, 0.6);">
-                                at x = <span id="stat-max-x">-</span></div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Maximum Y</div>
+                            <div class="stat-value" id="stat-max-y">-</div>
+                            <div class="stat-sub">at x = <span id="stat-max-x">-</span></div>
                         </div>
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2);">
-                            <div
-                                style="font-size: 11px; opacity: 0.9; margin-bottom: 4px; color: rgba(255, 255, 255, 0.7);">
-                                Minimum Y</div>
-                            <div style="font-weight: 700; font-size: 18px; color: #FF4444;" id="stat-min-y">-</div>
-                            <div
-                                style="font-size: 10px; opacity: 0.8; margin-top: 2px; color: rgba(255, 255, 255, 0.6);">
-                                at x = <span id="stat-min-x">-</span></div>
+                        <div class="stat-card">
+                            <div class="stat-label">Minimum Y</div>
+                            <div class="stat-value" id="stat-min-y">-</div>
+                            <div class="stat-sub">at x = <span id="stat-min-x">-</span></div>
                         </div>
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2);">
-                            <div
-                                style="font-size: 11px; opacity: 0.9; margin-bottom: 4px; color: rgba(255, 255, 255, 0.7);">
-                                Final Point</div>
-                            <div style="font-weight: 700; font-size: 18px; color: #FF4444;" id="stat-final-y">-</div>
-                            <div
-                                style="font-size: 10px; opacity: 0.8; margin-top: 2px; color: rgba(255, 255, 255, 0.6);">
-                                at x = <span id="stat-final-x">-</span></div>
+                        <div class="stat-card">
+                            <div class="stat-label">Final Point</div>
+                            <div class="stat-value" id="stat-final-y">-</div>
+                            <div class="stat-sub">at x = <span id="stat-final-x">-</span></div>
                         </div>
-                        <div
-                            style="background: rgba(255, 68, 68, 0.15); backdrop-filter: blur(5px); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 68, 68, 0.2);">
-                            <div
-                                style="font-size: 11px; opacity: 0.9; margin-bottom: 4px; color: rgba(255, 255, 255, 0.7);">
-                                Total Points</div>
-                            <div style="font-weight: 700; font-size: 18px; color: #FF4444;" id="stat-points">-</div>
-                            <div
-                                style="font-size: 10px; opacity: 0.8; margin-top: 2px; color: rgba(255, 255, 255, 0.6);">
-                                Y Change: <span id="stat-change">-</span></div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Points</div>
+                            <div class="stat-value" id="stat-points">-</div>
+                            <div class="stat-sub">Y Change: <span id="stat-change">-</span></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="visualization-placeholder">
-                <div class="placeholder-icon"></div>
-                <h3>Interactive Graph</h3>
-                <p>Your ODE solution will be visualized here</p>
-                <small>Enter an equation and click Visualize to see the solution curve</small>
+                <div class="placeholder-icon" style="font-size: 2em; margin-bottom: 10px;">📊</div>
+                <h3>Ready to Visualize</h3>
+                <p>Enter your ODE parameters above and click "Visualize Solution"</p>
             </div>
         </div>
     </div>
 </body>
 
 </html>
-

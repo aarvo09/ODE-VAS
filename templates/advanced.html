@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Analysis - ODE VAS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='advanced.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='transitions.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/advanced.js') }}" defer></script>
 </head>
+
 <body>
     <div id="toast-container"></div>
-    
+
     <div id="confirm-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -34,11 +36,11 @@
 
     <div class="container">
         <a href="/" class="home-btn">Back to Home</a>
-        
+
         <div class="advanced-card">
             <h1>Advanced ODE Analysis</h1>
-            <p class="subtitle">Parameter variation, stability analysis, and step-size control for in-depth study</p>
-            
+            <p class="subtitle">Parameter variation, stability analysis, and step-size control</p>
+
             <form id="advanced-form">
                 <div class="section">
                     <h2>Differential Equation</h2>
@@ -91,7 +93,8 @@
                     <h2>Parameter Variation</h2>
                     <div class="form-group">
                         <label for="param_name">Parameter Name</label>
-                        <input type="text" id="param_name" placeholder="e.g., k, a, b" oninput="validateParameterName()">
+                        <input type="text" id="param_name" placeholder="e.g., k, a, b"
+                            oninput="validateParameterName()">
                         <small>Single letter parameter to vary</small>
                         <span class="validation-message" id="param-name-error"></span>
                     </div>
@@ -119,7 +122,8 @@
                     <h2>Step-Size Comparison</h2>
                     <div class="form-group">
                         <label for="step_sizes">Step Sizes (comma-separated)</label>
-                        <input type="text" id="step_sizes" placeholder="e.g., 0.1, 0.05, 0.01" oninput="validateStepSizes()">
+                        <input type="text" id="step_sizes" placeholder="e.g., 0.1, 0.05, 0.01"
+                            oninput="validateStepSizes()">
                         <small>Compare solution accuracy with different step sizes</small>
                         <span class="validation-message" id="step-sizes-error"></span>
                         <div class="step-size-preview" id="step-sizes-preview"></div>
@@ -157,13 +161,14 @@
                 <div class="button-group">
                     <button type="submit" class="analyze-btn">Run Advanced Analysis</button>
                     <button type="button" class="clear-btn" id="clear-form-btn">Clear Form</button>
-                    <button type="button" class="restore-btn" id="restore-form-btn" style="display: none;">Restore Last</button>
+                    <button type="button" class="restore-btn" id="restore-form-btn" style="display: none;">Restore
+                        Last</button>
                 </div>
             </form>
 
             <div id="results" class="results-section" style="display: none;">
                 <h2>Analysis Results</h2>
-                
+
                 <div id="param-variation-card" class="result-card" style="display: none;">
                     <h3>Parameter Variation</h3>
                     <div id="param-variation-content">
@@ -197,5 +202,5 @@
         </div>
     </div>
 </body>
-</html>
 
+</html>

@@ -771,6 +771,136 @@ def advanced_analyze():
                 'error_type': 'validation'
             }), 400
     
+    step_sizes_str = data.get('step_sizes', '').strip()
+    if step_sizes_str:
+        try:
+            step_size_values = [float(s.strip()) for s in step_sizes_str.split(',')]
+            
+            if not all(h > 0 for h in step_size_values):
+                return jsonify({
+                    'status': 'error',
+                    'message': 'All step sizes must be positive',
+                    'error_type': 'validation'
+                }), 400
+            
+            if len(step_size_values) < 2:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'At least 2 step sizes required for comparison',
+                    'error_type': 'validation'
+                }), 400
+            
+            step_size_values_sorted = sorted(step_size_values)
+            
+            is_valid, validation_msg = validate_equation_input(equation_str)
+            if not is_valid:
+                return jsonify({
+                    'status': 'error',
+                    'message': validation_msg,
+                    'error_type': 'validation'
+                }), 400
+            
+            try:
+                parse_result = parse_equation(equation_str, parameters={})
+                if not parse_result.get('success'):
+                    return jsonify({
+                        'status': 'error',
+                        'message': parse_result.get('error', 'Failed to parse equation'),
+                        'error_type': 'parsing'
+                    }), 400
+                f = parse_result['function']
+            except Exception as e:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Failed to parse equation: {str(e)}',
+                    'error_type': 'parsing'
+                }), 400
+            
+            step_size_datasets = []
+            reference_solution = None
+            
+            for idx, h in enumerate(step_size_values_sorted):
+                try:
+                    if method_key == 'euler':
+                        solution = euler_method(f, x0, y0, x_end, h)
+                    elif method_key == 'improved_euler':
+                        solution = improved_euler_method(f, x0, y0, x_end, h)
+                    elif method_key == 'rk4':
+                        solution = rk4_method(f, x0, y0, x_end, h)
+                    else:
+                        return jsonify({
+                            'status': 'error',
+                            'message': 'Step-size comparison only supports numerical methods',
+                            'error_type': 'validation'
+                        }), 400
+                    
+                    if idx == 0:
+                        reference_solution = solution
+                    
+                    step_size_datasets.append({
+                        'step_size': h,
+                        'num_points': len(solution),
+                        'results': solution
+                    })
+                except Exception as e:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'Calculation failed for step size h={h}: {str(e)}',
+                        'error_type': 'calculation'
+                    }), 400
+            
+            error_metrics = []
+            for idx, dataset in enumerate(step_size_datasets):
+                if idx == 0:
+                    error_metrics.append({
+                        'step_size': dataset['step_size'],
+                        'max_error': 0.0,
+                        'mean_error': 0.0,
+                        'convergence_rate': None
+                    })
+                    continue
+                
+                current_solution = dataset['results']
+                errors = []
+                
+                for point in current_solution:
+                    ref_point = min(reference_solution, 
+                                   key=lambda p: abs(p['x'] - point['x']))
+                    error = abs(point['y'] - ref_point['y'])
+                    errors.append(error)
+                
+                max_error = max(errors) if errors else 0.0
+                mean_error = sum(errors) / len(errors) if errors else 0.0
+                
+                if idx > 1:
+                    prev_error = error_metrics[idx - 1]['mean_error']
+                    h_ratio = step_size_datasets[idx - 1]['step_size'] / dataset['step_size']
+                    if prev_error > 0 and mean_error > 0:
+                        convergence_rate = np.log(prev_error / mean_error) / np.log(h_ratio)
+                    else:
+                        convergence_rate = None
+                else:
+                    convergence_rate = None
+                
+                error_metrics.append({
+                    'step_size': dataset['step_size'],
+                    'max_error': round(max_error, 8),
+                    'mean_error': round(mean_error, 8),
+                    'convergence_rate': round(convergence_rate, 2) if convergence_rate else None
+                })
+            
+            results['step_size_comparison'] = {
+                'step_sizes': step_size_values_sorted,
+                'datasets': step_size_datasets,
+                'error_metrics': error_metrics
+            }
+        except ValueError as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Invalid parameter values: {str(e)}',
+                'error_type': 'validation'
+            }), 400
+    
     return jsonify(results), 200
 
 if __name__ == '__main__':

@@ -544,6 +544,146 @@ def simulate():
             'error_type': 'calculation'
         }), 400
 
+@app.route('/advanced-analyze', methods=['POST'])
+def advanced_analyze():
+    data = request.get_json()
+    
+    equation_str = data.get('equation', '').strip()
+    x0_str = data.get('x0', '')
+    y0_str = data.get('y0', '')
+    x_end_str = data.get('x_end', '')
+    method_key = data.get('method', 'rk4').strip()
+    
+    param_name = data.get('param_name', '').strip()
+    param_min_str = data.get('param_min', '')
+    param_max_str = data.get('param_max', '')
+    param_steps_str = data.get('param_steps', '')
+    
+    try:
+        x0 = float(x0_str)
+        y0 = float(y0_str)
+        x_end = float(x_end_str)
+    except (ValueError, TypeError):
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid initial conditions. x0, y0, and x_end must be numbers.',
+            'error_type': 'validation'
+        }), 400
+    
+    if x_end <= x0:
+        return jsonify({
+            'status': 'error',
+            'message': f'Domain end must be greater than x₀. Got x_end={x_end}, x0={x0}',
+            'error_type': 'validation'
+        }), 400
+    
+    if not equation_str:
+        return jsonify({
+            'status': 'error',
+            'message': 'Equation is required',
+            'error_type': 'validation'
+        }), 400
+    
+    if method_key not in METHODS:
+        return jsonify({
+            'status': 'error',
+            'message': f'Invalid method: {method_key}',
+            'error_type': 'validation'
+        }), 400
+    
+    results = {
+        'status': 'success',
+        'equation': equation_str,
+        'x0': x0,
+        'y0': y0,
+        'x_end': x_end,
+        'method': METHODS[method_key]['name']
+    }
+    
+    if param_name and param_min_str and param_max_str and param_steps_str:
+        try:
+            param_min = float(param_min_str)
+            param_max = float(param_max_str)
+            param_steps = int(param_steps_str)
+            
+            if param_steps < 2 or param_steps > 10:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Parameter steps must be between 2 and 10',
+                    'error_type': 'validation'
+                }), 400
+            
+            if param_max <= param_min:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Parameter maximum must be greater than minimum',
+                    'error_type': 'validation'
+                }), 400
+            
+            if not re.match(r'^[a-zA-Z]$', param_name):
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Parameter name must be a single letter',
+                    'error_type': 'validation'
+                }), 400
+            
+            param_values = np.linspace(param_min, param_max, param_steps)
+            param_datasets = []
+            
+            for param_value in param_values:
+                params = {param_name: param_value}
+                
+                is_valid, validation_msg = validate_equation_input(equation_str, param_names=set(params.keys()))
+                if not is_valid:
+                    return jsonify({
+                        'status': 'error',
+                        'message': validation_msg,
+                        'error_type': 'validation'
+                    }), 400
+                
+                try:
+                    expr, f = parse_equation(equation_str, parameters=params)
+                except Exception as e:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'Failed to parse equation: {str(e)}',
+                        'error_type': 'parsing'
+                    }), 400
+                
+                try:
+                    if method_key == 'euler':
+                        step_size = (x_end - x0) / 100
+                        solution = euler_method(f, x0, y0, x_end, step_size)
+                    else:
+                        solution = METHODS[method_key]['function'](f, x0, y0, x_end, None)
+                    
+                    param_datasets.append({
+                        'param_value': round(param_value, 4),
+                        'results': solution
+                    })
+                except Exception as e:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'Calculation failed for {param_name}={param_value}: {str(e)}',
+                        'error_type': 'calculation'
+                    }), 400
+            
+            results['parameter_variation'] = {
+                'param_name': param_name,
+                'param_min': param_min,
+                'param_max': param_max,
+                'param_steps': param_steps,
+                'datasets': param_datasets
+            }
+        except ValueError as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Invalid parameter values: {str(e)}',
+                'error_type': 'validation'
+            }), 400
+    
+    return jsonify(results), 200
+
 if __name__ == '__main__':
     app.run(debug=True)
 

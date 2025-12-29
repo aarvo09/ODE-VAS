@@ -92,7 +92,7 @@ function validateInitialConditions() {
     
     if (isValid && !isNaN(x0) && !isNaN(xEnd)) {
         const range = (xEnd - x0).toFixed(2);
-        summary.innerHTML = `✓ Valid range: [${x0}, ${xEnd}] (span: ${range})`;
+        summary.innerHTML = `Valid range: [${x0}, ${xEnd}] (span: ${range})`;
         summary.className = 'validation-summary success';
     } else {
         summary.innerHTML = '';
@@ -165,7 +165,7 @@ function validateParameterRange() {
     }
     
     if (isValid && !isNaN(paramMin) && !isNaN(paramMax)) {
-        summary.innerHTML = `✓ Parameter will vary from ${paramMin} to ${paramMax}`;
+        summary.innerHTML = `Parameter will vary from ${paramMin} to ${paramMax}`;
         summary.className = 'validation-summary success';
     } else {
         summary.innerHTML = '';
@@ -222,7 +222,7 @@ function validateStepSizes() {
         error.textContent = '';
         
         const sortedNumbers = [...numbers].sort((a, b) => b - a);
-        preview.innerHTML = `✓ ${numbers.length} step size(s): ${sortedNumbers.join(', ')}`;
+        preview.innerHTML = `${numbers.length} step size(s): ${sortedNumbers.join(', ')}`;
         preview.className = 'step-size-preview success';
         
         return true;
@@ -660,7 +660,7 @@ function displayStabilityAnalysis(stabilityData, equation) {
         }[point.stability] || '#94a3b8';
         
         const stabilityIcon = {
-            'stable': '✓',
+            'stable': 'Stable',
             'unstable': '✗',
             'neutral': '○',
             'unknown': '?'
@@ -688,7 +688,7 @@ function displayStabilityAnalysis(stabilityData, equation) {
             </div>
             <div style="margin-top: 20px; padding: 15px; background: rgba(26, 26, 26, 0.5); border-radius: 5px; font-size: 0.9em;">
                 <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Classification Guide:</strong></p>
-                <p style="color: #22c55e;">✓ Stable: f'(y) < 0 - Solutions converge to this point</p>
+                <p style="color: #22c55e;">Stable: f'(y) < 0 - Solutions converge to this point</p>
                 <p style="color: #ef4444;">✗ Unstable: f'(y) > 0 - Solutions diverge from this point</p>
                 <p style="color: #eab308;">○ Neutral: f'(y) = 0 - Further analysis required</p>
             </div>

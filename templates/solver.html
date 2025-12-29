@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Visualizer - ODE VAS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='visualizer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='transitions.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,7 +19,7 @@
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
     <div class="container">
-        <a href="/" class="home-btn">← Back to Home</a>
+        <a href="/" class="home-btn">Back to Home</a>
 
         <div class="solver-card">
             <h1>Interactive ODE Visualizer</h1>
@@ -130,7 +133,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="solve-btn">🎨 Visualize</button>
+                <button type="submit" class="solve-btn">Visualize</button>
             </form>
 
             <div id="result" class="result-area" style="display: none;"></div>
@@ -144,7 +147,7 @@
                     <div style="margin-bottom: 15px;">
                         <h4
                             style="margin: 0 0 10px 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: #FF4444;">
-                            📐 Direction Field (Slope Field)
+                            Direction Field (Slope Field)
                         </h4>
                         <label
                             style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
@@ -271,7 +274,7 @@
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h4
                             style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: #FF4444;">
-                            📈 Solution Statistics
+                            Solution Statistics
                         </h4>
                         <div style="display: flex; gap: 8px;">
                             <button id="copy-data-btn"
@@ -340,7 +343,7 @@
             </div>
 
             <div class="visualization-placeholder">
-                <div class="placeholder-icon">📊</div>
+                <div class="placeholder-icon"></div>
                 <h3>Interactive Graph</h3>
                 <p>Your ODE solution will be visualized here</p>
                 <small>Enter an equation and click Visualize to see the solution curve</small>

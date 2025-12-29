@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #000000;
     min-height: 100vh;
     padding: 20px;
@@ -89,14 +89,59 @@ h1 {
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group select {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #2a2a2a;
-    border-radius: 8px;
-    font-size: 1em;
-    transition: all 0.3s ease;
-    background: #0d0d0d;
+    cursor: pointer;
+    appearance: none;
+    background-image: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%), 
+                      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF4444' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    padding-right: 45px;
+}
+
+.form-group select option {
+    background: #1a1a1a;
     color: #ffffff;
+    padding: 12px;
+    font-size: 1em;
+}
+
+.form-group select option:hover,
+.form-group select option:checked {
+    background: linear-gradient(135deg, #FF4444 0%, #cc3636 100%);
+    color: #ffffff;
+}
+
+.example-selector {
+    cursor: pointer;
+    appearance: none;
+    background-image: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%), 
+                      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF4444' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    padding-right: 45px;
+}
+
+.example-selector option {
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 12px;
+}
+
+.form-group input[type="text"]:hover,
+.form-group input[type="number"]:hover,
+.form-group select:hover {
+    border-color: #3a3a3a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.08);
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #FF4444;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    box-shadow: 0 0 0 4px rgba(255, 68, 68, 0.15), 0 6px 16px rgba(255, 68, 68, 0.2);
+    transform: translateY(-1px);
 }
 
 .form-group input:focus,

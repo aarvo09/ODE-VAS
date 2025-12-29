@@ -117,13 +117,13 @@ function handleFormSubmit(e) {
             if (status === 200 && data.status === 'success') {
                 let html = `
                 <div class="success-header">
-                    <h3>✓ Solution Complete</h3>
+                    <h3>Solution Complete</h3>
                 </div>`;
 
                 if (data.analytical_formula) {
                     html += `
                 <div class="analytical-solution-box">
-                    <h4>📐 Exact Analytical Solution</h4>
+                    <h4>Exact Analytical Solution</h4>
                     <div class="formula-display">
                         y(x) = ${escapeHtml(data.analytical_formula)}
                     </div>

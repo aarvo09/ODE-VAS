@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #000000;
     min-height: 100vh;
     color: #fff;
@@ -158,9 +158,10 @@ body {
 .feature-icon {
     font-size: 1.5em;
     color: #FF4444;
-}
     font-weight: bold;
 }
+    
+
 
 .feature-item span {
     color: #cbd5e1;

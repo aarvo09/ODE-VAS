@@ -22,7 +22,7 @@ function copyDataToClipboard() {
     });
 
     navigator.clipboard.writeText(text).then(() => {
-        showToast('✓ Data copied to clipboard!', 'success');
+        showToast('Data copied to clipboard!', 'success');
     }).catch(() => {
         showToast('Failed to copy data', 'error');
     });
@@ -40,7 +40,7 @@ function downloadGraphAsPNG() {
     link.href = chartInstance.toBase64Image();
     link.click();
 
-    showToast('✓ Graph downloaded!', 'success');
+    showToast('Graph downloaded!', 'success');
 }
 
 function calculateStatistics(results) {
@@ -362,7 +362,7 @@ function resetSlopeFieldSettings() {
     document.getElementById('slope-opacity-value').textContent = slopeFieldOpacity;
     
     updateSlopeField();
-    showToast('✓ Settings reset to defaults', 'success');
+    showToast('Settings reset to defaults', 'success');
 }
 
 function loadSlopeFieldPreferences() {
@@ -680,7 +680,7 @@ function handleFormSubmit(e) {
             if (status === 200 && data.status === 'success') {
                 let html = `
                 <div class="success-header">
-                    <h3>✓ Configuration Successful</h3>
+                    <h3>Configuration Successful</h3>
                 </div>
                 <div class="result-content">
                     <div class="result-row">
@@ -705,7 +705,7 @@ function handleFormSubmit(e) {
                 if (data.analytical_formula) {
                     html += `
                     <div class="result-row analytical-solution">
-                        <strong>📐 Exact Solution:</strong> y(x) = ${escapeHtml(data.analytical_formula)}
+                        <strong>Exact Solution:</strong> y(x) = ${escapeHtml(data.analytical_formula)}
                     </div>`;
                 }
 
@@ -761,7 +761,7 @@ function handleFormSubmit(e) {
                     enableY0Slider(data.y0);
                     enableXEndSlider(data.x_end, data.x0);
 
-                    showToast('✓ Solution computed successfully!', 'success');
+                    showToast('Solution computed successfully!', 'success');
                 }
             } else {
                 const errorType = data.error_type || 'unknown';

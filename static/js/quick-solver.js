@@ -67,6 +67,11 @@ function handleFormSubmit(e) {
     const method = document.getElementById('method').value;
     console.log('Selected method:', method);
 
+    const submitBtn = document.querySelector('.solve-btn');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; animation: spin 1s linear infinite;">progress_activity</span> Computing...';
+
     const parameters = document.getElementById('parameters').value;
     const x0 = document.getElementById('x0').value;
     const y0 = document.getElementById('y0').value;
@@ -99,9 +104,8 @@ function handleFormSubmit(e) {
     }
 
     const resultDiv = document.getElementById('result');
-    resultDiv.style.display = 'block';
-    resultDiv.className = 'result-area processing';
-    resultDiv.innerHTML = '<p>🔄 Processing...</p>';
+    resultDiv.style.display = 'none';
+    resultDiv.innerHTML = '';
 
     fetch('/simulate', {
         method: 'POST',
@@ -271,6 +275,7 @@ function handleFormSubmit(e) {
             `;
 
                 resultDiv.className = 'result-area success';
+                resultDiv.style.display = 'block';
                 resultDiv.innerHTML = html;
             } else {
                 const errorType = data.error_type || 'unknown';
@@ -281,6 +286,7 @@ function handleFormSubmit(e) {
                 }
 
                 resultDiv.className = 'result-area error';
+                resultDiv.style.display = 'block';
                 resultDiv.innerHTML = `
                 <div class="error-header">
                     <h3 style="display: flex; align-items: center;">${errorIcon} Error</h3>
@@ -291,6 +297,7 @@ function handleFormSubmit(e) {
         })
         .catch(error => {
             resultDiv.className = 'result-area error';
+            resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
             <div class="error-header">
                 <h3 style="display: flex; align-items: center;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">wifi_off</span> Connection Error</h3>
@@ -298,6 +305,11 @@ function handleFormSubmit(e) {
             <p>Failed to connect to server. Please make sure the server is running.</p>
         `;
             console.error('Error:', error);
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
         });
 }
 

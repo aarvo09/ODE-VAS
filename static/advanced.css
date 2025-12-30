@@ -59,11 +59,13 @@ body {
 
 
 .advanced-card {
-    background: var(--bg-card);
+    background: rgba(15, 15, 15, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-lg);
     padding: 40px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 h1 {
@@ -427,4 +429,24 @@ input.valid {
     color: var(--primary);
     border-color: var(--primary);
     transform: scale(1.1);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-page);
+    border-left: 1px solid var(--border-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-hover);
+    border-radius: 5px;
+    border: 2px solid var(--bg-page);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }

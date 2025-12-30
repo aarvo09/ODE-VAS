@@ -256,6 +256,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         showToast('Starting advanced analysis...', 'info');
 
+        const analyzeBtn = document.querySelector('.analyze-btn');
+        const originalBtnText = analyzeBtn.innerHTML;
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle; animation: spin 1s linear infinite;">progress_activity</span> Analyzing...';
+
         fetch('/advanced-analyze', {
             method: 'POST',
             headers: {
@@ -309,6 +314,10 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(error => {
                 showToast('Error: ' + error.message, 'error');
                 console.error('Analysis error:', error);
+            })
+            .finally(() => {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = originalBtnText;
             });
     });
 

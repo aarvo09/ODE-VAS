@@ -366,6 +366,11 @@ def quick_solver():
 @app.route('/advanced')
 def advanced():
     return render_template('advanced.html')
+
+@app.route('/help')
+def help():
+    return render_template('help.html')
+
 @app.route('/simulate', methods=['POST'])
 def simulate():
     data = request.get_json()

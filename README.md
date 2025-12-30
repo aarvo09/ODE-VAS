@@ -25,9 +25,56 @@ Comprehensive ODE analysis with multiple tools:
 *   **Numerical**: Euler, Improved Euler, Runge-Kutta 4th Order (RK4)
 *   **Analytical**: Direct Integration, Separation of Variables, Integrating Factor, Substitution
 
-### **Example Equations**
-`-2*x*y` (decay), `y*(1-y)` (logistic), `-x/y` (oscillator), `sin(x)*y`, `exp(-x)*y`  
-**Supported**: `sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `+`, `-`, `*`, `/`, `**`
+---
+
+##  Example Equations
+
+*   **Exponential Decay**: `-2*x*y`
+*   **Logistic Growth**: `y*(1-y)`
+*   **Harmonic Oscillator**: `-x/y`
+*   **Polynomial**: `x**2 - y`
+*   **Trigonometric**: `sin(x)*y`
+*   **Exponential Function**: `exp(-x)*y`
+
+### Supported Functions
+`sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `+`, `-`, `*`, `/`, `**` (power)
+
+---
+
+##  Features in Detail
+
+### Parameter Variation
+Compare solutions across different parameter values (e.g., varying decay rates or growth constants). Results displayed as color-coded multi-line graphs with HSL gradient coloring.
+
+### Step-Size Comparison
+Analyze numerical accuracy by comparing solutions with different step sizes. View:
+- Number of evaluation points
+- Maximum and mean errors (compared to reference)
+- Convergence rates between consecutive step sizes
+
+### Stability Analysis
+Automatically finds equilibrium points by solving dy/dx = 0. Classifies stability based on derivative:
+- **Stable**: f'(y) < 0 (solutions converge)
+- **Unstable**: f'(y) > 0 (solutions diverge)
+- **Neutral**: f'(y) = 0 (center/saddle point)
+
+### Phase Portrait
+Generates 7 trajectories from different starting points across the domain. Displays equilibrium lines as dashed horizontals with color-coded stability.
+
+---
+
+##  UI Features
+
+*   **Real-Time Validation**: Input fields validate as you type with visual feedback
+*   **Glassmorphism Design**: Modern blur effects on panels and controls
+*   **Toast Notifications**: Non-intrusive feedback for actions
+*   **Responsive Layout**: Works on desktop, tablet, and mobile
+*   **Dark Theme**: Easy on the eyes with red accent colors
+*   **Keyboard Shortcuts**: ESC to close modals
+*   **Form Persistence**: Restore previous analysis with one click
+
+---
+
 
 ---
 
@@ -77,39 +124,43 @@ Comprehensive ODE analysis with multiple tools:
 
 ---
 
-## Project Structure
+##  Project Structure
 
 ```
 ODE VAS/
-├── app.py                   # Flask backend & ODE solvers
-├── requirements.txt         # Dependencies
-├── templates/               # HTML pages (home, quick-solver, visualizer, advanced)
-└── static/                  # CSS styles & JavaScript (utils, visualizer, advanced)
+├── app.py                     
+├── requirements.txt            
+├── templates/
+│   ├── home.html             
+│   ├── quick-solver.html      
+│   ├── solver.html           
+│   └── advanced.html         
+├── static/
+│   ├── style.css              
+│   ├── home.css              
+│   ├── quick-solver.css       
+│   ├── visualizer.css         
+│   ├── advanced.css           
+│   ├── transitions.css        
+│   └── js/
+│       ├── utils.js           
+│       ├── quick-solver.js    
+│       ├── visualizer.js      
+│       └── advanced.js        
+└── README.md                  
 ```
 
----
 
-## Acknowledgments
-
-*   **Flask** - Python web framework
-*   **SymPy** - Symbolic computation library
-*   **Chart.js** - Beautiful JavaScript charts
-*   **NumPy** - Numerical computing
-
----
-
-
-## 📝 License
+##  License
 
 This project is open source and available under the MIT License.
 
 ---
 
-## 👨‍💻 Author
+##  Author
 
 **Arvind**
 - GitHub: [Your GitHub Profile]
 - Email: [Your Email]
 
 ---
-

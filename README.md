@@ -2,8 +2,16 @@
 
 **ODE VAS** (Ordinary Differential Equation Visualization and Analysis System) is a powerful, modern web-based platform for solving, visualizing, and analyzing first-order ordinary differential equations. It combines analytical methods with numerical techniques to provide comprehensive insights into ODE behavior, stability, and convergence.
 
-## Features & Usage
+## About
 
+- Try it here : [link]()
+
+## Demo 
+
+- Demo video of the project : [Video](https://drive.google.com/file/d/1fLSao6DwAKwZjGYRYRQhhWRT-JbWvAK7/view?usp=drive_link)
+
+## Features & Usage
+    
 ### **Quick Solver**
 Fast numerical solutions with tabular output. Select a method (Euler, RK4, or analytical methods like Separation of Variables), enter your equation, set initial conditions, and solve.
 
@@ -75,7 +83,6 @@ Generates 7 trajectories from different starting points across the domain. Displ
 
 ---
 
-
 ---
 
 ##  Technology Stack
@@ -105,7 +112,7 @@ Generates 7 trajectories from different starting points across the domain. Displ
 
 2.  **Clone the Repository**:
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/aarvo09/ODE-VAS
     cd "ODE VAS"
     ```
 
@@ -128,28 +135,35 @@ Generates 7 trajectories from different starting points across the domain. Displ
 
 ```
 ODE VAS/
-├── app.py                     
-├── requirements.txt            
-├── templates/
-│   ├── home.html             
-│   ├── quick-solver.html      
-│   ├── solver.html           
-│   └── advanced.html         
+├── .venv/                     
 ├── static/
-│   ├── style.css              
-│   ├── home.css              
-│   ├── quick-solver.css       
-│   ├── visualizer.css         
-│   ├── advanced.css           
-│   ├── transitions.css        
-│   └── js/
-│       ├── utils.js           
-│       ├── quick-solver.js    
-│       ├── visualizer.js      
-│       └── advanced.js        
-└── README.md                  
-```
+│   ├── images/
+│   │   └── math_doodles.png
+│   ├── js/
+│   │   ├── advanced.js
+│   │   ├── quick-solver.js
+│   │   ├── utils.js
+│   │   └── visualizer.js
+│   ├── advanced.css
+│   ├── home.css
+│   ├── quick-solver.css
+│   ├── style.css
+│   ├── transitions.css
+│   └── visualizer.css
+├── templates/
+│   ├── advanced.html
+│   ├── help.html
+│   ├── home.html
+│   ├── quick-solver.html
+│   ├── solver.html
+├── .gitignore
+├── app.py
+├── LICENSE
+├── README.md
+└── requirements.txt                  
+```    
 
+```
 
 ##  License
 
@@ -160,7 +174,7 @@ This project is open source and available under the MIT License.
 ##  Author
 
 **Arvind**
-- GitHub: [Your GitHub Profile]
-- Email: [Your Email]
+- GitHub: [https://github.com/aarvo09]
+- Email: [arvindkumarsingh1008n@gmail.com]
 
 ---

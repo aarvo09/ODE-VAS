@@ -533,7 +533,7 @@ function validateDomainValues() {
     }
 
     if (xEnd <= x0) {
-        errorDiv.textContent = `⚠ Domain end (${xEnd}) must be greater than x₀ (${x0})`;
+        errorDiv.textContent = `Warning: Domain end (${xEnd}) must be greater than x₀ (${x0})`;
         errorDiv.style.display = 'block';
         xEndInput.classList.add('invalid');
         xEndInput.classList.remove('valid');
@@ -615,7 +615,7 @@ function handleFormSubmit(e) {
     console.log('Form submit prevented, validation starting...');
 
     if (!validateDomainValues()) {
-        showToast('⚠ Please fix validation errors before submitting', 'error');
+        showToast('Warning: Please fix validation errors before submitting', 'error');
         return;
     }
 

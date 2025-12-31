@@ -77,7 +77,7 @@ function validateInitialConditions() {
     if (isNaN(xEnd) || xEnd <= x0) {
         xEndInput.classList.add('invalid');
         xEndInput.classList.remove('valid');
-        xEndError.textContent = '⚠ x_end must be greater than x₀';
+        xEndError.textContent = 'Warning: x_end must be greater than x₀';
         isValid = false;
     } else {
         xEndInput.classList.add('valid');
@@ -116,7 +116,7 @@ function validateParameterName() {
     if (!validPattern.test(paramName)) {
         paramInput.classList.add('invalid');
         paramInput.classList.remove('valid');
-        error.textContent = '⚠ Must be a single letter (a-z, A-Z)';
+        error.textContent = 'Warning: Must be a single letter (a-z, A-Z)';
         return false;
     } else {
         paramInput.classList.add('valid');
@@ -140,7 +140,7 @@ function validateParameterRange() {
     if (isNaN(paramMin)) {
         minInput.classList.add('invalid');
         minInput.classList.remove('valid');
-        minError.textContent = '⚠ Invalid number';
+        minError.textContent = 'Warning: Invalid number';
         isValid = false;
     } else {
         minInput.classList.add('valid');
@@ -151,12 +151,12 @@ function validateParameterRange() {
     if (isNaN(paramMax)) {
         maxInput.classList.add('invalid');
         maxInput.classList.remove('valid');
-        maxError.textContent = '⚠ Invalid number';
+        maxError.textContent = 'Warning: Invalid number';
         isValid = false;
     } else if (paramMax <= paramMin) {
         maxInput.classList.add('invalid');
         maxInput.classList.remove('valid');
-        maxError.textContent = '⚠ Must be greater than minimum';
+        maxError.textContent = 'Warning: Must be greater than minimum';
         isValid = false;
     } else {
         maxInput.classList.add('valid');
@@ -182,7 +182,7 @@ function validateParameterSteps() {
     if (isNaN(steps) || steps < 2 || steps > 10) {
         stepsInput.classList.add('invalid');
         stepsInput.classList.remove('valid');
-        error.textContent = '⚠ Must be between 2 and 10';
+        error.textContent = 'Warning: Must be between 2 and 10';
         return false;
     } else {
         stepsInput.classList.add('valid');
@@ -213,7 +213,7 @@ function validateStepSizes() {
     if (hasInvalid) {
         input.classList.add('invalid');
         input.classList.remove('valid');
-        error.textContent = '⚠ All values must be positive numbers';
+        error.textContent = 'Warning: All values must be positive numbers';
         preview.innerHTML = '';
         return false;
     } else {

@@ -139,7 +139,7 @@ function handleFormSubmit(e) {
                 } else {
                     html += `
                 <div class="numerical-note">
-                    <p>ℹ️ Exact formula not available - numerical approximation provided</p>
+                    <p>Note: Exact formula not available - numerical approximation provided</p>
                 </div>`;
                 }
 
